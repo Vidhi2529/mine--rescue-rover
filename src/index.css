@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    overscroll-behavior: none;
+  }
+}
+
+/* Custom scrollbar styles (global) */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #060e20;
+}
+::-webkit-scrollbar-thumb {
+  background: #2d3449;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f4850;
+}
+
+.industrial-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.industrial-scrollbar::-webkit-scrollbar-track {
+  background: #060e20;
+}
+.industrial-scrollbar::-webkit-scrollbar-thumb {
+  background: #222a3d;
+  border-radius: 2px;
+}
+
+@layer utilities {
+  .text-title-brand {
+    font-size: clamp(14px, 1vw, 18px);
+    line-height: 1.2;
+  }
+  .text-panel-header {
+    font-size: clamp(12px, 0.8vw, 14px);
+    line-height: 1.25;
+  }
+  .text-card-header {
+    font-size: clamp(11px, 0.72vw, 13px);
+    line-height: 1.3;
+  }
+  .text-nav-item {
+    font-size: clamp(12px, 0.75vw, 13.5px);
+    line-height: 1.35;
+  }
+  .text-advisory-ticker {
+    font-size: clamp(12px, 0.75vw, 13.5px);
+    line-height: 1.3;
+  }
+  .text-telemetry-label {
+    font-size: clamp(11px, 0.7vw, 12.5px);
+    line-height: 1.35;
+  }
+  .text-telemetry-value-lg {
+    font-size: clamp(15px, 1.1vw, 18px);
+    line-height: 1.15;
+  }
+  .text-badge-pill {
+    font-size: clamp(10px, 0.65vw, 11.5px);
+    line-height: 1.25;
+  }
+  .text-caption-meta {
+    font-size: clamp(10px, 0.6vw, 11.5px);
+    line-height: 1.35;
+  }
+  .text-caption-tiny {
+    font-size: clamp(9.5px, 0.55vw, 11px);
+    line-height: 1.3;
+  }
+  .text-metric-primary {
+    font-size: clamp(22px, 1.7vw, 30px);
+    line-height: 1.1;
+  }
+  .p-responsive {
+    padding: clamp(10px, 0.8vw, 16px);
+  }
+  .p-card-responsive {
+    padding: clamp(8px, 0.6vw, 12px);
+  }
+  .gap-responsive {
+    gap: clamp(8px, 0.6vw, 12px);
+  }
+}
