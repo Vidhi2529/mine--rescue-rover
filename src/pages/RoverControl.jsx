@@ -28,7 +28,8 @@ export default function RoverControl() {
     let isMounted = true;
     const fetchTelemetry = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/telemetry');
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const res = await fetch(`${API_BASE_URL}/api/telemetry`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (isMounted) {
@@ -63,7 +64,7 @@ export default function RoverControl() {
   const handleAnalyzeFrame = async () => {
     setIsAnalyzing(true);
     try {
-      const imgSource = cameraImgRef.current || 'https://lh3.googleusercontent.com/aida/AEtjO1VMRjZrDNX04BAIE1-k2yv_HPCZ8WYfK6MQiGNYyYnRKeHC02asluL7cg-28C7dysING8RQWgMH7mYTSdLJu1weUMg_OVe4N_f6Ukd5SMvC8t5fo3GG3Um0iGiqXppNp52mt2SIjye_mi2zwG_5E1eJC5iDQIz5KdaI-jyfdZ-iPgbvA_Ygsm2Rcnnz0wTzOCI-fqttQSmaB1R4bJHiHqFXwR9ReQsU0q_XO6UxvVd55KUck6LOHcRkOcM';
+      const imgSource = cameraImgRef.current?.src || '/rover_control_hud.jpg';
       const result = await analyzeFrame(imgSource);
       setVictimDetection(result);
       setAiDetectionActive(true);
@@ -255,98 +256,102 @@ export default function RoverControl() {
   });
 
   return (
-    <>
-      {/* 2. CENTER WORKSPACE: ROVER CONTROL & CAMERA FEED */}
-      <main className="flex-1 min-w-0 bg-[#0b1326] p-3.5 flex flex-col gap-3 overflow-y-auto industrial-scrollbar">
-        {/* PAGE BANNER HEADER */}
-        <div className="flex flex-wrap items-center justify-between border-b border-outline-variant/25 pb-3 gap-2 shrink-0">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-primary text-[24px]">precision_manufacturing</span>
-              <h1 className="font-bold text-[17px] md:text-[18px] tracking-wider uppercase text-on-surface">
-                ROVER CONTROL
-              </h1>
-              <span className="px-2.5 py-0.5 rounded bg-primary/15 border border-primary/30 text-primary font-mono text-[12px] font-semibold">
-                MANUAL TELEOPERATION
-              </span>
-            </div>
-            <p className="text-on-surface-variant text-[12.5px] mt-1">
-              Manual teleoperation and live rover status &bull; Non-autonomous direct operator control
-            </p>
-          </div>
-
-          {/* Right Status Chips */}
-          <div className="flex flex-wrap items-center gap-2 shrink-0 font-mono text-[12px]">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 font-semibold shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              MANUAL CONTROL
-            </span>
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded border font-semibold shadow-sm ${
-                loraConnected
-                  ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
-                  : 'bg-rose-950/50 border-rose-500/60 text-rose-300 animate-pulse'
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${loraConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`}></span>
-              {loraConnected ? 'LoRa LINK ACTIVE' : 'LoRa LINK LOST'}
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-rose-950/40 border border-rose-500/50 text-rose-300 font-semibold shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-rose-400"></span>
-              FAIL-SAFE ARMED
+    <main className="flex-1 min-w-0 bg-[#0b1326] p-3.5 flex flex-col gap-3 overflow-y-auto industrial-scrollbar">
+      {/* ========================================================================= */}
+      {/* 1. PAGE BANNER HEADER & TOP STATUS INFORMATION                            */}
+      {/* ========================================================================= */}
+      <div className="flex flex-wrap items-center justify-between border-b border-outline-variant/25 pb-3 gap-2 shrink-0">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <span className="material-symbols-outlined text-primary text-[24px]">precision_manufacturing</span>
+            <h1 className="font-bold text-[17px] md:text-[18px] tracking-wider uppercase text-on-surface">
+              ROVER CONTROL
+            </h1>
+            <span className="px-2.5 py-0.5 rounded bg-primary/15 border border-primary/30 text-primary font-mono text-[12px] font-semibold">
+              MANUAL TELEOPERATION
             </span>
           </div>
+          <p className="text-on-surface-variant text-[12.5px] mt-1">
+            Manual teleoperation and live rover status &bull; Non-autonomous direct operator control
+          </p>
         </div>
 
-        {/* TOAST / ACTION BANNER */}
-        {actionNotice && (
-          <div
-            className={`px-3.5 py-2 rounded-lg border flex items-center justify-between text-[12.5px] font-mono transition-all animate-fadeIn shrink-0 ${
-              actionNotice.type === 'danger'
-                ? 'bg-rose-950/60 border-rose-500 text-rose-200'
-                : actionNotice.type === 'success'
-                ? 'bg-emerald-950/60 border-emerald-500 text-emerald-200'
-                : 'bg-sky-950/60 border-sky-500 text-sky-200'
+        {/* Right Status Chips */}
+        <div className="flex flex-wrap items-center gap-2 shrink-0 font-mono text-[12px]">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 font-semibold shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            MANUAL CONTROL
+          </span>
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded border font-semibold shadow-sm ${
+              loraConnected
+                ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
+                : 'bg-rose-950/50 border-rose-500/60 text-rose-300 animate-pulse'
             }`}
           >
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">
-                {actionNotice.type === 'danger' ? 'report' : 'info'}
-              </span>
-              <span>{actionNotice.text}</span>
-            </div>
-            <span className="text-[11px] opacity-75 uppercase">TELEMETRY ACK</span>
-          </div>
-        )}
+            <span className={`w-2 h-2 rounded-full ${loraConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`}></span>
+            {loraConnected ? 'LoRa LINK ACTIVE' : 'LoRa LINK LOST'}
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-rose-950/40 border border-rose-500/50 text-rose-300 font-semibold shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+            FAIL-SAFE ARMED
+          </span>
+        </div>
+      </div>
 
-        {/* CRITICAL DISCONNECTED ALERT (WHEN LORA IS LOST) */}
-        {!loraConnected && (
-          <div className="bg-rose-950/80 border-2 border-rose-500 p-3 rounded-lg flex items-center justify-between gap-3 text-rose-200 shadow-xl animate-pulse shrink-0">
-            <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-[28px] text-rose-400">link_off</span>
-              <div>
-                <h4 className="font-mono font-bold text-[14.5px] text-white uppercase tracking-wider">
-                  COMMUNICATION LOST — ROVER STOPPED
-                </h4>
-                <p className="text-[12px] text-rose-200 font-sans mt-0.5">
-                  SX1278 telemetry heartbeat interrupted (&gt;1,500ms). Firmware deadman safety cut TB6612FNG H-bridge power immediately.
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleToggleLora}
-              className="px-3.5 py-1.5 rounded bg-rose-700 hover:bg-rose-600 text-white font-mono text-[12px] font-semibold border border-rose-400 shadow transition-colors shrink-0"
-            >
-              RESTORE LoRa LINK
-            </button>
+      {/* TOAST / ACTION BANNER */}
+      {actionNotice && (
+        <div
+          className={`px-3.5 py-2 rounded-lg border flex items-center justify-between text-[12.5px] font-mono transition-all animate-fadeIn shrink-0 ${
+            actionNotice.type === 'danger'
+              ? 'bg-rose-950/60 border-rose-500 text-rose-200'
+              : actionNotice.type === 'success'
+              ? 'bg-emerald-950/60 border-emerald-500 text-emerald-200'
+              : 'bg-sky-950/60 border-sky-500 text-sky-200'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">
+              {actionNotice.type === 'danger' ? 'report' : 'info'}
+            </span>
+            <span>{actionNotice.text}</span>
           </div>
-        )}
+          <span className="text-[11px] opacity-75 uppercase">TELEMETRY ACK</span>
+        </div>
+      )}
 
-        {/* ========================================================================= */}
-        {/* 3. LIVE ROVER FEED (CAMERA VIEW CONSISTENT WITH DASHBOARD) */}
-        {/* ========================================================================= */}
-        <div className="bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3.5 shadow-sm flex flex-col gap-2.5">
+      {/* CRITICAL DISCONNECTED ALERT (WHEN LORA IS LOST) */}
+      {!loraConnected && (
+        <div className="bg-rose-950/80 border-2 border-rose-500 p-3 rounded-lg flex items-center justify-between gap-3 text-rose-200 shadow-xl animate-pulse shrink-0">
+          <div className="flex items-center gap-2.5">
+            <span className="material-symbols-outlined text-[28px] text-rose-400">link_off</span>
+            <div>
+              <h4 className="font-mono font-bold text-[14.5px] text-white uppercase tracking-wider">
+                COMMUNICATION LOST — ROVER STOPPED
+              </h4>
+              <p className="text-[12px] text-rose-200 font-sans mt-0.5">
+                SX1278 telemetry heartbeat interrupted (&gt;1,500ms). Firmware deadman safety cut TB6612FNG H-bridge power immediately.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleToggleLora}
+            className="px-3.5 py-1.5 rounded bg-rose-700 hover:bg-rose-600 text-white font-mono text-[12px] font-semibold border border-rose-400 shadow transition-colors shrink-0"
+          >
+            RESTORE LoRa LINK
+          </button>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 2. MAIN TWO-COLUMN WORKSPACE:                                             */}
+      {/*    LEFT: ROVER IMAGE / VISUAL                                             */}
+      {/*    RIGHT: MANUAL DRIVE / TELEOPERATION                                    */}
+      {/* ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch">
+        {/* LEFT COLUMN — ROVER IMAGE / VISUAL (7 COLS) */}
+        <section className="lg:col-span-7 bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3.5 shadow-sm flex flex-col justify-between gap-2.5">
           <div className="flex flex-wrap items-center justify-between border-b border-outline-variant/20 pb-2 gap-2">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[20px]">videocam</span>
@@ -363,7 +368,7 @@ export default function RoverControl() {
           </div>
 
           {/* AI VICTIM DETECTION BAR */}
-          <div className="flex flex-wrap items-center justify-between gap-2.5 px-3 py-2 rounded-lg bg-[#060e20] border border-outline-variant/30 font-mono text-[12px]">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#060e20] border border-outline-variant/30 font-mono text-[12px]">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-[18px] text-amber-400">psychology</span>
               <span className="font-bold uppercase text-on-surface tracking-wider">AI VICTIM DETECTION</span>
@@ -378,28 +383,28 @@ export default function RoverControl() {
               </span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 md:gap-4">
+            <div className="flex flex-wrap items-center gap-2.5 md:gap-3">
               <div className="flex items-center gap-1.5">
-                <span className="text-outline text-[11px] uppercase">People Detected:</span>
+                <span className="text-outline text-[11px] uppercase">People:</span>
                 <span className="font-bold text-on-surface">{aiDetectionActive ? victimDetection.peopleDetected : 0}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-outline text-[11px] uppercase">Possible Injured:</span>
+                <span className="text-outline text-[11px] uppercase">Injured:</span>
                 <span className={`font-bold ${aiDetectionActive ? 'text-amber-400' : 'text-outline'}`}>
                   {aiDetectionActive ? victimDetection.possibleInjured : 0}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-outline text-[11px] uppercase">Confidence:</span>
+                <span className="text-outline text-[11px] uppercase">Conf:</span>
                 <span className="font-bold text-emerald-400">{aiDetectionActive ? victimDetection.confidence : '--'}</span>
               </div>
               <button
                 type="button"
                 onClick={handleAnalyzeFrame}
                 disabled={isAnalyzing}
-                className="px-3 py-1 rounded bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 font-bold transition-all text-[11.5px] flex items-center gap-1.5 active:scale-95"
+                className="px-2.5 py-1 rounded bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 font-bold transition-all text-[11px] flex items-center gap-1 active:scale-95"
               >
-                <span className="material-symbols-outlined text-[15px]">
+                <span className="material-symbols-outlined text-[14px]">
                   {isAnalyzing ? 'sync' : 'search_check'}
                 </span>
                 <span>{isAnalyzing ? 'ANALYZING...' : 'ANALYZE FRAME'}</span>
@@ -408,13 +413,12 @@ export default function RoverControl() {
           </div>
 
           {/* Video Container with Overlays */}
-          <div className="relative w-full aspect-video max-h-[380px] md:max-h-[420px] rounded-lg overflow-hidden border border-outline-variant/40 bg-black shadow-2xl ring-1 ring-primary/20 mx-auto select-none">
+          <div className="relative w-full aspect-video max-h-[380px] rounded-lg overflow-hidden border border-outline-variant/40 bg-black shadow-2xl ring-1 ring-primary/20 mx-auto select-none">
             <img
               ref={cameraImgRef}
-              crossOrigin="anonymous"
-              alt="Live Rover POV Night-Vision Feed"
+              alt="Live Rover POV Telemetry HUD Feed"
               className="w-full h-full object-cover"
-              src="https://lh3.googleusercontent.com/aida/AEtjO1VMRjZrDNX04BAIE1-k2yv_HPCZ8WYfK6MQiGNYyYnRKeHC02asluL7cg-28C7dysING8RQWgMH7mYTSdLJu1weUMg_OVe4N_f6Ukd5SMvC8t5fo3GG3Um0iGiqXppNp52mt2SIjye_mi2zwG_5E1eJC5iDQIz5KdaI-jyfdZ-iPgbvA_Ygsm2Rcnnz0wTzOCI-fqttQSmaB1R4bJHiHqFXwR9ReQsU0q_XO6UxvVd55KUck6LOHcRkOcM"
+              src="/rover_control_hud.jpg"
             />
 
             {/* AI Victim Bounding Box Overlay */}
@@ -429,420 +433,173 @@ export default function RoverControl() {
                 </div>
               </div>
             )}
-
-            {/* UPPER CAMERA HUD OVERLAY */}
-            <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none font-mono text-[12px]">
-              <div className="flex items-center gap-2 bg-[#060e20]/85 backdrop-blur px-2.5 py-1 rounded border border-outline-variant/40">
-                <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-ping"></span>
-                <span className="text-on-surface font-semibold tracking-wide">ROVER R-01</span>
-                <span className="text-outline">|</span>
-                <span className="text-emerald-400 font-semibold">MANUAL MODE</span>
-                <span className="text-outline">|</span>
-                <span className="text-primary font-bold">STA 14A ({telemetry?.gps?.altitude ? `${telemetry.gps.altitude}m` : '-850m'})</span>
-              </div>
-              <div className="flex items-center gap-2 bg-[#060e20]/85 backdrop-blur px-2.5 py-1 rounded border border-outline-variant/40">
-                <span className="text-outline">LoRa:</span>
-                <span className={loraConnected ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-bold'}>
-                  {loraConnected ? `433MHz (${telemetry?.loraStatus?.rssi !== undefined ? telemetry.loraStatus.rssi : -94} dBm)` : 'DISCONNECTED'}
-                </span>
-                <span className="text-outline-variant">|</span>
-                <span className="text-sky-400">18ms</span>
-              </div>
-            </div>
-
-            {/* LOWER CAMERA HUD OVERLAY */}
-            <div className="absolute bottom-2.5 left-2.5 right-2.5 flex flex-wrap items-center justify-between gap-2 pointer-events-none font-mono text-[12px]">
-              <div className="flex items-center gap-1.5">
-                <span className="bg-[#060e20]/90 backdrop-blur px-2.5 py-1 rounded border border-outline-variant/40 text-amber-400 font-semibold">
-                  CH4: {telemetry?.ch4 ? `${telemetry.ch4.value}% [${telemetry.ch4.status === 'WARNING' ? 'ELEVATED' : telemetry.ch4.status}]` : '1.15% [ELEVATED]'}
-                </span>
-                <span className="bg-[#060e20]/90 backdrop-blur px-2.5 py-1 rounded border border-outline-variant/40 text-on-surface font-semibold">
-                  TEMP: {telemetry?.temperature ? `${telemetry.temperature.value}${telemetry.temperature.unit}` : '26.8°C'}
-                </span>
-                <span className={`bg-[#060e20]/90 backdrop-blur px-2.5 py-1 rounded border ${obstacleStatus.color} font-semibold`}>
-                  OBSTACLE: {obstacleDistance.toFixed(2)}m [{obstacleStatus.label}]
-                </span>
-                <span className="bg-[#060e20]/90 backdrop-blur px-2.5 py-1 rounded border border-outline-variant/40 text-sky-400 font-semibold">
-                  IMU: P {currentMpu.pitch} &bull; R {currentMpu.roll}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <span className="bg-[#060e20]/90 backdrop-blur px-2.5 py-1 rounded border border-outline-variant/40 text-outline">
-                  DIR: <strong className="text-on-surface">{initialDriveStatus.heading}</strong>
-                </span>
-                <span className={`bg-[#060e20]/90 backdrop-blur px-2.5 py-1 rounded border font-semibold ${
-                  movement === 'STOPPED'
-                    ? 'text-outline border-outline-variant/40'
-                    : 'text-emerald-400 border-emerald-500/40'
-                }`}>
-                  STATE: {movement}
-                </span>
-              </div>
-            </div>
           </div>
-        </div>
+        </section>
 
-        {/* ========================================================================= */}
-        {/* 1 & 2. MANUAL DRIVE CONTROLS & DRIVE STATUS */}
-        {/* ========================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
-          {/* 1. MANUAL DRIVE CONTROLS (7 COLS) */}
-          <section className="lg:col-span-7 bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3.5 shadow-sm flex flex-col justify-between gap-3">
-            <div className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">sports_esports</span>
-                <h3 className="font-bold text-[14px] md:text-[15px] tracking-wider uppercase text-on-surface">
-                  MANUAL DRIVE TELEOPERATION PAD
-                </h3>
-              </div>
-              <span className="font-mono text-[11px] text-outline uppercase hidden sm:inline">
-                KEYBOARD: W / A / S / D &bull; SPACE TO STOP
-              </span>
-            </div>
-
-            {/* D-Pad Layout */}
-            <div className="flex flex-col items-center justify-center gap-2 py-2">
-              {/* Row 1: Forward */}
-              <button
-                type="button"
-                onClick={() => executeDriveCommand('FORWARD')}
-                className={`w-28 py-3 rounded-lg border font-mono font-bold text-[13px] flex flex-col items-center justify-center transition-all shadow-md ${
-                  movement === 'FORWARD'
-                    ? 'bg-primary text-black border-primary ring-2 ring-primary/50'
-                    : 'bg-[#060e20] hover:bg-surface-container border-outline-variant/40 text-on-surface active:scale-95'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[24px]">arrow_upward</span>
-                <span>FORWARD</span>
-                <span className="text-[10px] text-outline font-normal mt-0.5">[ W ]</span>
-              </button>
-
-              {/* Row 2: Left, Stop, Right */}
-              <div className="flex items-center gap-2.5">
-                {/* Turn Left */}
-                <button
-                  type="button"
-                  onClick={() => executeDriveCommand('LEFT')}
-                  className={`w-28 py-3 rounded-lg border font-mono font-bold text-[13px] flex flex-col items-center justify-center transition-all shadow-md ${
-                    movement === 'LEFT'
-                      ? 'bg-primary text-black border-primary ring-2 ring-primary/50'
-                      : 'bg-[#060e20] hover:bg-surface-container border-outline-variant/40 text-on-surface active:scale-95'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[24px]">arrow_back</span>
-                  <span>TURN LEFT</span>
-                  <span className="text-[10px] text-outline font-normal mt-0.5">[ A ]</span>
-                </button>
-
-                {/* Stop */}
-                <button
-                  type="button"
-                  onClick={() => executeDriveCommand('STOPPED')}
-                  className={`w-28 py-3 rounded-lg border font-mono font-bold text-[13px] flex flex-col items-center justify-center transition-all shadow-md ${
-                    movement === 'STOPPED'
-                      ? 'bg-surface-container-highest border-primary text-primary ring-1 ring-primary/40'
-                      : 'bg-[#060e20] hover:bg-surface-container border-outline-variant/40 text-on-surface'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[24px]">stop</span>
-                  <span>STOP</span>
-                  <span className="text-[10px] text-outline font-normal mt-0.5">[ SPACE ]</span>
-                </button>
-
-                {/* Turn Right */}
-                <button
-                  type="button"
-                  onClick={() => executeDriveCommand('RIGHT')}
-                  className={`w-28 py-3 rounded-lg border font-mono font-bold text-[13px] flex flex-col items-center justify-center transition-all shadow-md ${
-                    movement === 'RIGHT'
-                      ? 'bg-primary text-black border-primary ring-2 ring-primary/50'
-                      : 'bg-[#060e20] hover:bg-surface-container border-outline-variant/40 text-on-surface active:scale-95'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[24px]">arrow_forward</span>
-                  <span>TURN RIGHT</span>
-                  <span className="text-[10px] text-outline font-normal mt-0.5">[ D ]</span>
-                </button>
-              </div>
-
-              {/* Row 3: Backward */}
-              <button
-                type="button"
-                onClick={() => executeDriveCommand('REVERSE')}
-                className={`w-28 py-3 rounded-lg border font-mono font-bold text-[13px] flex flex-col items-center justify-center transition-all shadow-md ${
-                  movement === 'REVERSE'
-                    ? 'bg-primary text-black border-primary ring-2 ring-primary/50'
-                    : 'bg-[#060e20] hover:bg-surface-container border-outline-variant/40 text-on-surface active:scale-95'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[24px]">arrow_downward</span>
-                <span>BACKWARD</span>
-                <span className="text-[10px] text-outline font-normal mt-0.5">[ S ]</span>
-              </button>
-            </div>
-
-            {/* Speed Level Selector & Prominent Emergency STOP */}
-            <div className="pt-2.5 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-3">
-              {/* Speed Level */}
-              <div className="flex items-center gap-2 font-mono text-[12px]">
-                <span className="text-outline uppercase font-semibold">SPEED LEVEL:</span>
-                <div className="flex items-center bg-[#060e20] p-0.5 rounded border border-outline-variant/30">
-                  {['Low', 'Medium', 'High'].map((lvl) => (
-                    <button
-                      key={lvl}
-                      type="button"
-                      onClick={() => {
-                        setSpeedLevel(lvl);
-                        showToast(`Speed set to ${lvl} (${initialDriveStatus.speedPwm[lvl]})`);
-                      }}
-                      className={`px-3 py-1 rounded text-[11.5px] font-semibold transition-all ${
-                        speedLevel === lvl
-                          ? 'bg-primary/20 text-primary border border-primary/40'
-                          : 'text-outline hover:text-on-surface'
-                      }`}
-                    >
-                      {lvl}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* EMERGENCY STOP BUTTON */}
-              <button
-                type="button"
-                onClick={handleToggleEmergencyStop}
-                className={`py-2 px-5 rounded-lg font-mono font-bold text-[13px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg ${
-                  emergencyStop
-                    ? 'bg-amber-600 hover:bg-amber-500 text-white animate-pulse ring-2 ring-amber-400'
-                    : 'bg-rose-600 hover:bg-rose-500 text-white ring-1 ring-rose-400/50'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">
-                  {emergencyStop ? 'refresh' : 'emergency'}
-                </span>
-                <span>{emergencyStop ? 'RELEASE E-STOP' : 'EMERGENCY STOP'}</span>
-              </button>
-            </div>
-          </section>
-
-          {/* 2. DRIVE STATUS & 4. OBSTACLE AWARENESS (5 COLS) */}
-          <section className="lg:col-span-5 bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3.5 shadow-sm flex flex-col justify-between gap-3">
-            <div className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">electric_meter</span>
-                <h3 className="font-bold text-[14px] md:text-[15px] tracking-wider uppercase text-on-surface">
-                  DRIVE &amp; OBSTACLE STATUS
-                </h3>
-              </div>
-              <span className="font-mono text-[11px] text-emerald-400 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-600/40 font-semibold">
-                TB6612FNG
-              </span>
-            </div>
-
-            {/* Status Grid */}
-            <div className="grid grid-cols-2 gap-2 font-mono text-[12px]">
-              <div className="bg-[#060e20] p-2.5 rounded border border-outline-variant/30">
-                <span className="text-outline text-[11px] uppercase block">DRIVE MODE</span>
-                <span className="text-emerald-400 font-bold text-[14px] mt-0.5 block">MANUAL TELEOP</span>
-              </div>
-
-              <div className="bg-[#060e20] p-2.5 rounded border border-outline-variant/30">
-                <span className="text-outline text-[11px] uppercase block">MOTOR STATUS</span>
-                <span
-                  className={`font-bold text-[14px] mt-0.5 block ${
-                    movement === 'STOPPED' ? 'text-outline' : 'text-emerald-400'
-                  }`}
-                >
-                  {movement === 'STOPPED' ? 'STOPPED' : 'ACTIVE (PWM)'}
-                </span>
-              </div>
-
-              <div className="bg-[#060e20] p-2.5 rounded border border-outline-variant/30">
-                <span className="text-outline text-[11px] uppercase block">CURRENT MOVEMENT</span>
-                <span className="text-on-surface font-bold text-[14px] mt-0.5 block">{movement}</span>
-              </div>
-
-              <div className="bg-[#060e20] p-2.5 rounded border border-outline-variant/30">
-                <span className="text-outline text-[11px] uppercase block">SPEED LEVEL / PWM</span>
-                <span className="text-primary font-bold text-[14px] mt-0.5 block">
-                  {speedLevel} &bull; {initialDriveStatus.speedPwm[speedLevel]}
-                </span>
-              </div>
-            </div>
-
-            {/* 4. OBSTACLE AWARENESS (HC-SR04 SONAR) */}
-            <div className="bg-[#060e20] p-3 rounded-lg border border-outline-variant/30 flex flex-col gap-2 font-mono">
-              <div className="flex items-center justify-between">
-                <span className="text-outline text-[11px] uppercase font-semibold">
-                  HC-SR04 FORWARD SONAR
-                </span>
-                <span className={`text-[11px] px-2 py-0.5 rounded border font-semibold ${obstacleStatus.color}`}>
-                  {obstacleStatus.badge}
-                </span>
-              </div>
-
-              <div className="flex items-baseline justify-between">
-                <div className="flex items-baseline gap-2">
-                  <span className={`text-[24px] font-bold leading-none ${obstacleStatus.textColor}`}>
-                    {obstacleDistance.toFixed(2)} m
-                  </span>
-                  <span className="text-[12px] text-outline">Clearance</span>
-                </div>
-                <span className={`text-[13px] font-bold ${obstacleStatus.textColor}`}>
-                  {obstacleStatus.label}
-                </span>
-              </div>
-
-              {/* Clearance Range Bar */}
-              <div className="w-full h-2 bg-surface-container rounded-full overflow-hidden">
-                <div
-                  className={`h-full ${obstacleStatus.barColor} transition-all duration-300`}
-                  style={{ width: `${Math.min(100, (obstacleDistance / 2.5) * 100)}%` }}
-                ></div>
-              </div>
-
-              {/* Demo Obstacle Presets */}
-              <div className="flex items-center justify-between pt-1 text-[11px] text-outline">
-                <span>SIMULATE DISTANCE:</span>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setObstacleDistance(1.8)}
-                    className="px-2 py-0.5 rounded bg-surface-container-high hover:text-emerald-400 border border-outline-variant/30"
-                  >
-                    1.8m (Clear)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setObstacleDistance(0.6)}
-                    className="px-2 py-0.5 rounded bg-surface-container-high hover:text-amber-400 border border-outline-variant/30"
-                  >
-                    0.6m (Caution)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setObstacleDistance(0.25)}
-                    className="px-2 py-0.5 rounded bg-surface-container-high hover:text-rose-400 border border-outline-variant/30"
-                  >
-                    0.25m (Stop)
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* MPU6050 IMU TELEMETRY */}
-            <div className="bg-[#060e20] p-3 rounded-lg border border-outline-variant/30 flex flex-col gap-2 font-mono">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-primary text-[16px]">screen_rotation</span>
-                  <span className="text-outline text-[11px] uppercase font-semibold">
-                    MPU6050 IMU TELEMETRY
-                  </span>
-                </div>
-                <span className="text-[10.5px] px-2 py-0.5 rounded border font-semibold text-emerald-400 bg-emerald-950/30 border-emerald-600/40">
-                  {mpu6050Data.stability}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-1.5 text-center text-[11.5px]">
-                <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
-                  <span className="text-outline text-[10px] uppercase block">Pitch</span>
-                  <span className="font-bold text-on-surface mt-0.5 block">{currentMpu.pitch}</span>
-                </div>
-                <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
-                  <span className="text-outline text-[10px] uppercase block">Roll</span>
-                  <span className="font-bold text-on-surface mt-0.5 block">{currentMpu.roll}</span>
-                </div>
-                <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
-                  <span className="text-outline text-[10px] uppercase block">Tilt</span>
-                  <span className="font-bold text-on-surface mt-0.5 block">{currentMpu.tilt}</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-1.5 text-center text-[11px]">
-                <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
-                  <span className="text-outline text-[10px] uppercase block">Impact</span>
-                  <span className="font-bold text-sky-400 mt-0.5 block truncate">{currentMpu.impact}</span>
-                </div>
-                <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
-                  <span className="text-outline text-[10px] uppercase block">Rollover Risk</span>
-                  <span className="font-bold text-emerald-400 mt-0.5 block">{currentMpu.rolloverRisk}</span>
-                </div>
-                <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
-                  <span className="text-outline text-[10px] uppercase block">Stability</span>
-                  <span className="font-bold text-emerald-400 mt-0.5 block">{currentMpu.stability}</span>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 5. LIVE SENSOR SNAPSHOT (10 METRICS) */}
-        {/* ========================================================================= */}
-        <section className="bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3.5 shadow-sm flex flex-col gap-2.5">
+        {/* RIGHT COLUMN — MANUAL DRIVE / TELEOPERATION (5 COLS) */}
+        <section className="lg:col-span-5 bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3.5 shadow-sm flex flex-col justify-between gap-3">
           <div className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-[20px]">sensors</span>
-              <h3 className="font-bold text-[14px] md:text-[15px] tracking-wider uppercase text-on-surface">
-                LIVE ROVER SENSOR SNAPSHOT &bull; TELEMETRY OVERVIEW
-              </h3>
+              <span className="material-symbols-outlined text-primary text-[20px]">sports_esports</span>
+              <h2 className="font-bold text-[14px] md:text-[15px] tracking-wider uppercase text-on-surface">
+                MANUAL DRIVE TELEOPERATION PAD
+              </h2>
             </div>
-            <span className="font-mono text-[11px] text-outline uppercase">
-              ESP32 PAYLOAD UPLINK &bull; CONTINUOUS REFRESH
+            <span className="font-mono text-[11px] text-outline uppercase hidden sm:inline">
+              KEYBOARD: W / A / S / D &bull; SPACE
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 font-mono text-[12px]">
-            {currentSensorSnapshot.map((s) => (
-              <div
-                key={s.id}
-                className="bg-[#060e20] p-2.5 rounded border border-outline-variant/30 flex flex-col justify-between min-h-[85px]"
+          {/* D-Pad Layout */}
+          <div className="flex flex-col items-center justify-center gap-2 py-2 my-auto">
+            {/* Row 1: Forward */}
+            <button
+              type="button"
+              onClick={() => executeDriveCommand('FORWARD')}
+              className={`w-28 py-2.5 rounded-lg border font-mono font-bold text-[13px] flex flex-col items-center justify-center transition-all shadow-md ${
+                movement === 'FORWARD'
+                  ? 'bg-primary text-black border-primary ring-2 ring-primary/50'
+                  : 'bg-[#060e20] hover:bg-surface-container border-outline-variant/40 text-on-surface active:scale-95'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[24px]">arrow_upward</span>
+              <span>FORWARD</span>
+              <span className="text-[10px] text-outline font-normal mt-0.5">[ W ]</span>
+            </button>
+
+            {/* Row 2: Left, Stop, Right */}
+            <div className="flex items-center gap-2.5">
+              {/* Turn Left */}
+              <button
+                type="button"
+                onClick={() => executeDriveCommand('LEFT')}
+                className={`w-28 py-2.5 rounded-lg border font-mono font-bold text-[13px] flex flex-col items-center justify-center transition-all shadow-md ${
+                  movement === 'LEFT'
+                    ? 'bg-primary text-black border-primary ring-2 ring-primary/50'
+                    : 'bg-[#060e20] hover:bg-surface-container border-outline-variant/40 text-on-surface active:scale-95'
+                }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-outline uppercase font-semibold truncate">{s.label}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold ${s.statusClass}`}>
-                    {s.status}
-                  </span>
-                </div>
-                <span className="text-[18px] font-bold text-on-surface mt-1">
-                  {s.value}
-                </span>
-                <span className="text-[10.5px] text-outline truncate">{s.sensor}</span>
+                <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+                <span>TURN LEFT</span>
+                <span className="text-[10px] text-outline font-normal mt-0.5">[ A ]</span>
+              </button>
+
+              {/* Stop */}
+              <button
+                type="button"
+                onClick={() => executeDriveCommand('STOPPED')}
+                className={`w-28 py-2.5 rounded-lg border font-mono font-bold text-[13px] flex flex-col items-center justify-center transition-all shadow-md ${
+                  movement === 'STOPPED'
+                    ? 'bg-surface-container-highest border-primary text-primary ring-1 ring-primary/40'
+                    : 'bg-[#060e20] hover:bg-surface-container border-outline-variant/40 text-on-surface'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[24px]">stop</span>
+                <span>STOP</span>
+                <span className="text-[10px] text-outline font-normal mt-0.5">[ SPACE ]</span>
+              </button>
+
+              {/* Turn Right */}
+              <button
+                type="button"
+                onClick={() => executeDriveCommand('RIGHT')}
+                className={`w-28 py-2.5 rounded-lg border font-mono font-bold text-[13px] flex flex-col items-center justify-center transition-all shadow-md ${
+                  movement === 'RIGHT'
+                    ? 'bg-primary text-black border-primary ring-2 ring-primary/50'
+                    : 'bg-[#060e20] hover:bg-surface-container border-outline-variant/40 text-on-surface active:scale-95'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[24px]">arrow_forward</span>
+                <span>TURN RIGHT</span>
+                <span className="text-[10px] text-outline font-normal mt-0.5">[ D ]</span>
+              </button>
+            </div>
+
+            {/* Row 3: Backward */}
+            <button
+              type="button"
+              onClick={() => executeDriveCommand('REVERSE')}
+              className={`w-28 py-2.5 rounded-lg border font-mono font-bold text-[13px] flex flex-col items-center justify-center transition-all shadow-md ${
+                movement === 'REVERSE'
+                  ? 'bg-primary text-black border-primary ring-2 ring-primary/50'
+                  : 'bg-[#060e20] hover:bg-surface-container border-outline-variant/40 text-on-surface active:scale-95'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[24px]">arrow_downward</span>
+              <span>BACKWARD</span>
+              <span className="text-[10px] text-outline font-normal mt-0.5">[ S ]</span>
+            </button>
+          </div>
+
+          {/* Speed Level Selector & Prominent Emergency STOP */}
+          <div className="pt-2.5 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-3">
+            {/* Speed Level */}
+            <div className="flex items-center gap-2 font-mono text-[12px]">
+              <span className="text-outline uppercase font-semibold">SPEED:</span>
+              <div className="flex items-center bg-[#060e20] p-0.5 rounded border border-outline-variant/30">
+                {['Low', 'Medium', 'High'].map((lvl) => (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => {
+                      setSpeedLevel(lvl);
+                      showToast(`Speed set to ${lvl} (${initialDriveStatus.speedPwm[lvl]})`);
+                    }}
+                    className={`px-3 py-1 rounded text-[11.5px] font-semibold transition-all ${
+                      speedLevel === lvl
+                        ? 'bg-primary/20 text-primary border border-primary/40'
+                        : 'text-outline hover:text-on-surface'
+                    }`}
+                  >
+                    {lvl}
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* EMERGENCY STOP BUTTON */}
+            <button
+              type="button"
+              onClick={handleToggleEmergencyStop}
+              className={`py-2 px-4 rounded-lg font-mono font-bold text-[12.5px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg ${
+                emergencyStop
+                  ? 'bg-amber-600 hover:bg-amber-500 text-white animate-pulse ring-2 ring-amber-400'
+                  : 'bg-rose-600 hover:bg-rose-500 text-white ring-1 ring-rose-400/50'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[19px]">
+                {emergencyStop ? 'refresh' : 'emergency'}
+              </span>
+              <span>{emergencyStop ? 'RELEASE E-STOP' : 'EMERGENCY STOP'}</span>
+            </button>
           </div>
         </section>
-      </main>
+      </div>
 
       {/* ========================================================================= */}
-      {/* RIGHT TELEMETRY COLUMN: COMM, SPEAKER & HARDWARE STATUS (Width: 360px) */}
+      {/* 3. DIRECTLY BELOW BOTH COLUMNS — COMMS & SYSTEM (FULL-WIDTH)              */}
       {/* ========================================================================= */}
-      <aside className="w-[360px] shrink-0 bg-[#060e20] border-l border-outline-variant/30 flex flex-col h-full overflow-y-auto industrial-scrollbar z-20 select-none">
-        {/* Column Header */}
-        <div className="h-12 px-4 flex items-center justify-between border-b border-outline-variant/30 bg-[#060e20] shrink-0">
+      <section className="bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3.5 shadow-sm flex flex-col gap-3">
+        {/* Section Header */}
+        <div className="flex flex-wrap items-center justify-between border-b border-outline-variant/20 pb-2 gap-2">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-[20px]">cell_tower</span>
-            <div className="flex flex-col">
-              <h3 className="font-bold text-[14px] tracking-wider uppercase text-on-surface leading-none">
-                COMMS &amp; SYSTEMS
-              </h3>
-              <span className="font-mono text-[11px] text-outline uppercase mt-0.5">
-                SX1278 LoRa &bull; HARDWARE HEALTH
-              </span>
-            </div>
+            <h3 className="font-bold text-[14px] md:text-[15px] tracking-wider uppercase text-on-surface leading-none">
+              COMMS &amp; SYSTEMS
+            </h3>
+            <span className="font-mono text-[11px] text-outline uppercase hidden sm:inline">
+              &bull; SX1278 LoRa &bull; SPEAKER DOWNLINK &bull; HARDWARE HEALTH
+            </span>
           </div>
           <span className="font-mono text-[11px] text-emerald-400 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-600/40 font-semibold">
-            433.0 MHz
+            433.0 MHz SX1278
           </span>
         </div>
 
-        <div className="p-3.5 flex flex-col gap-4">
-          {/* ======================================================================= */}
-          {/* 6. COMMUNICATION STATUS */}
-          {/* ======================================================================= */}
-          <section className="bg-surface-container-low/90 p-3.5 rounded-lg border border-outline-variant/30 flex flex-col gap-2.5 font-mono text-[12px]">
+        {/* 3-Column Grid inside the full-width card */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {/* LoRa COMM STATUS (SX1278) */}
+          <div className="bg-[#060e20] p-3 rounded-lg border border-outline-variant/30 flex flex-col justify-between gap-2.5 font-mono text-[12px]">
             <div className="flex items-center justify-between border-b border-outline-variant/20 pb-1.5">
               <span className="text-outline uppercase text-[11.5px] font-semibold">
                 LoRa COMM STATUS (SX1278)
@@ -880,8 +637,8 @@ export default function RoverControl() {
             </div>
 
             {/* Fail-Safe Explanation Banner */}
-            <div className="bg-rose-950/30 p-2.5 rounded border border-rose-500/40 text-[11.5px] leading-snug font-sans text-rose-200">
-              <strong className="font-mono text-rose-300 block text-[11px] uppercase">
+            <div className="bg-rose-950/30 p-2 rounded border border-rose-500/40 text-[11px] leading-snug font-sans text-rose-200">
+              <strong className="font-mono text-rose-300 block text-[10.5px] uppercase">
                 CRITICAL HARDWARE FAIL-SAFE:
               </strong>
               If LoRa telemetry heartbeat is lost (&gt;1,500ms), ESP32 firmware instantly halts motors.
@@ -891,7 +648,7 @@ export default function RoverControl() {
             <button
               type="button"
               onClick={handleToggleLora}
-              className={`w-full py-1.5 px-3 rounded font-semibold text-[11.5px] uppercase tracking-wider transition-colors border ${
+              className={`w-full py-1.5 px-3 rounded font-semibold text-[11.5px] uppercase tracking-wider transition-colors border mt-auto ${
                 loraConnected
                   ? 'bg-surface-container-high hover:bg-rose-950/40 text-outline hover:text-rose-400 border-outline-variant/40'
                   : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400 font-bold'
@@ -899,12 +656,10 @@ export default function RoverControl() {
             >
               {loraConnected ? 'Simulate Carrier Loss' : 'Reconnect LoRa Link'}
             </button>
-          </section>
+          </div>
 
-          {/* ======================================================================= */}
-          {/* 7. SPEAKER CONTROL */}
-          {/* ======================================================================= */}
-          <section className="bg-surface-container-low/90 p-3.5 rounded-lg border border-outline-variant/30 flex flex-col gap-2.5">
+          {/* SPEAKER DOWNLINK CONTROL */}
+          <div className="bg-[#060e20] p-3 rounded-lg border border-outline-variant/30 flex flex-col justify-between gap-2 font-mono">
             <div className="flex items-center justify-between border-b border-outline-variant/20 pb-1.5">
               <div className="flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[18px] text-primary">volume_up</span>
@@ -917,19 +672,19 @@ export default function RoverControl() {
               </span>
             </div>
 
-            <p className="text-[12px] text-on-surface-variant leading-snug">
+            <p className="text-[11.5px] text-on-surface-variant leading-tight font-sans">
               Select preset or enter custom message to broadcast through rover PA speaker:
             </p>
 
             {/* Preset Radio List */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               {speakerPresets.map((preset) => (
                 <label
                   key={preset.id}
-                  className={`p-2 rounded border cursor-pointer flex items-start gap-2 transition-colors ${
+                  className={`p-1.5 rounded border cursor-pointer flex items-start gap-2 transition-colors ${
                     selectedPresetId === preset.id
                       ? 'bg-sky-950/40 border-primary text-on-surface'
-                      : 'bg-[#060e20] border-outline-variant/30 text-on-surface-variant hover:bg-surface-container/60'
+                      : 'bg-surface-container/30 border-outline-variant/30 text-on-surface-variant hover:bg-surface-container/60'
                   }`}
                 >
                   <input
@@ -941,11 +696,11 @@ export default function RoverControl() {
                       setSelectedPresetId(preset.id);
                       setCustomSpeakerText('');
                     }}
-                    className="mt-1 text-primary focus:ring-0"
+                    className="mt-0.5 text-primary focus:ring-0"
                   />
                   <div className="flex flex-col min-w-0">
-                    <span className="font-mono text-[11px] text-primary font-bold">{preset.code}</span>
-                    <span className="text-[12px] italic text-on-surface mt-0.5">
+                    <span className="font-mono text-[10.5px] text-primary font-bold">{preset.code}</span>
+                    <span className="text-[11.5px] italic text-on-surface line-clamp-1 font-sans">
                       &ldquo;{preset.text}&rdquo;
                     </span>
                   </div>
@@ -954,43 +709,42 @@ export default function RoverControl() {
             </div>
 
             {/* Custom Text Input */}
-            <div className="flex flex-col gap-1 font-mono text-[11.5px]">
-              <label className="text-outline uppercase font-semibold">CUSTOM INSTRUCTION (OPTIONAL):</label>
+            <div className="flex flex-col gap-1 font-mono text-[11px]">
               <input
                 type="text"
                 value={customSpeakerText}
                 onChange={(e) => setCustomSpeakerText(e.target.value)}
                 placeholder="Enter custom operator announcement..."
-                className="w-full px-3 py-1.5 rounded bg-[#060e20] border border-outline-variant/40 text-on-surface placeholder:text-outline text-[12px] font-sans focus:outline-none focus:border-primary"
+                className="w-full px-2.5 py-1 rounded bg-[#0b1326] border border-outline-variant/40 text-on-surface placeholder:text-outline text-[11.5px] font-sans focus:outline-none focus:border-primary"
               />
             </div>
 
-            {/* Send Button */}
-            <button
-              type="button"
-              onClick={handleSendSpeaker}
-              disabled={speakerTransmitting}
-              className={`w-full py-2.5 px-3 rounded font-mono font-semibold text-[12.5px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
-                speakerTransmitting
-                  ? 'bg-sky-800 text-sky-200 cursor-not-allowed'
-                  : 'bg-primary/20 hover:bg-primary/30 text-primary border border-primary/50 shadow-sm'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                {speakerTransmitting ? 'sync' : 'volume_up'}
+            {/* Send Button & Status */}
+            <div className="flex flex-col gap-1 mt-auto">
+              <button
+                type="button"
+                onClick={handleSendSpeaker}
+                disabled={speakerTransmitting}
+                className={`w-full py-1.5 px-3 rounded font-mono font-semibold text-[11.5px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${
+                  speakerTransmitting
+                    ? 'bg-sky-800 text-sky-200 cursor-not-allowed'
+                    : 'bg-primary/20 hover:bg-primary/30 text-primary border border-primary/50 shadow-sm'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]">
+                  {speakerTransmitting ? 'sync' : 'volume_up'}
+                </span>
+                <span>{speakerTransmitting ? 'TRANSMITTING VIA LoRa...' : 'SEND MESSAGE'}</span>
+              </button>
+
+              <span className="font-mono text-[10.5px] text-outline leading-tight truncate">
+                {speakerStatus}
               </span>
-              <span>{speakerTransmitting ? 'TRANSMITTING VIA LoRa...' : 'SEND MESSAGE'}</span>
-            </button>
+            </div>
+          </div>
 
-            <span className="font-mono text-[11px] text-outline leading-tight">
-              {speakerStatus}
-            </span>
-          </section>
-
-          {/* ======================================================================= */}
-          {/* 8. ROVER SYSTEM STATUS */}
-          {/* ======================================================================= */}
-          <section className="bg-surface-container-low/90 p-3.5 rounded-lg border border-outline-variant/30 flex flex-col gap-2 font-mono text-[11.5px]">
+          {/* SYSTEM HARDWARE HEALTH */}
+          <div className="bg-[#060e20] p-3 rounded-lg border border-outline-variant/30 flex flex-col justify-between gap-2 font-mono text-[11.5px]">
             <div className="flex items-center justify-between border-b border-outline-variant/20 pb-1.5">
               <span className="text-outline uppercase text-[11.5px] font-semibold">
                 SYSTEM HARDWARE HEALTH
@@ -1002,21 +756,222 @@ export default function RoverControl() {
               {systemHardwareModules.map((mod) => (
                 <div
                   key={mod.name}
-                  className="bg-[#060e20] px-2.5 py-1.5 rounded border border-outline-variant/20 flex items-center justify-between"
+                  className="bg-surface-container/30 px-2.5 py-1.5 rounded border border-outline-variant/20 flex items-center justify-between"
                 >
                   <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-on-surface text-[12px] truncate">{mod.name}</span>
-                    <span className="text-[10.5px] text-outline truncate">{mod.role}</span>
+                    <span className="font-bold text-on-surface text-[11.5px] truncate">{mod.name}</span>
+                    <span className="text-[10px] text-outline truncate font-sans">{mod.role}</span>
                   </div>
-                  <span className={`font-bold text-[11.5px] shrink-0 ${mod.color}`}>
+                  <span className={`font-bold text-[11px] shrink-0 ${mod.color}`}>
                     {mod.status}
                   </span>
                 </div>
               ))}
             </div>
-          </section>
+          </div>
         </div>
-      </aside>
-    </>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 4. LOWER SECTIONS: DRIVE STATUS, SONAR & IMU TELEMETRY                     */}
+      {/* ========================================================================= */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {/* DRIVE STATUS & PRESETS */}
+        <section className="bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3.5 shadow-sm flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[20px]">electric_meter</span>
+              <h3 className="font-bold text-[13.5px] tracking-wider uppercase text-on-surface">
+                DRIVE STATUS
+              </h3>
+            </div>
+            <span className="font-mono text-[11px] text-emerald-400 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-600/40 font-semibold">
+              TB6612FNG
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 font-mono text-[12px]">
+            <div className="bg-[#060e20] p-2 rounded border border-outline-variant/30">
+              <span className="text-outline text-[10.5px] uppercase block">MOTOR STATUS</span>
+              <span
+                className={`font-bold text-[13px] mt-0.5 block ${
+                  movement === 'STOPPED' ? 'text-outline' : 'text-emerald-400'
+                }`}
+              >
+                {movement === 'STOPPED' ? 'STOPPED' : 'ACTIVE (PWM)'}
+              </span>
+            </div>
+
+            <div className="bg-[#060e20] p-2 rounded border border-outline-variant/30">
+              <span className="text-outline text-[10.5px] uppercase block">CURRENT MOVEMENT</span>
+              <span className="text-on-surface font-bold text-[13px] mt-0.5 block">{movement}</span>
+            </div>
+
+            <div className="bg-[#060e20] p-2 rounded border border-outline-variant/30">
+              <span className="text-outline text-[10.5px] uppercase block">SPEED LEVEL / PWM</span>
+              <span className="text-primary font-bold text-[13px] mt-0.5 block truncate">
+                {speedLevel} &bull; {initialDriveStatus.speedPwm[speedLevel]}
+              </span>
+            </div>
+
+            <div className="bg-[#060e20] p-2 rounded border border-outline-variant/30">
+              <span className="text-outline text-[10.5px] uppercase block">BATTERY (3S Li-ion)</span>
+              <span className="text-emerald-400 font-bold text-[13px] mt-0.5 block truncate">
+                {telemetry?.battery ? `${telemetry.battery.level}% (11.8V)` : '88% (11.8V)'}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* HC-SR04 SONAR CLEARANCE / AWARENESS */}
+        <section className="bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3.5 shadow-sm flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[20px]">radar</span>
+              <h3 className="font-bold text-[13.5px] tracking-wider uppercase text-on-surface">
+                SONAR CLEARANCE
+              </h3>
+            </div>
+            <span className={`text-[10.5px] px-2 py-0.5 rounded border font-semibold font-mono ${obstacleStatus.color}`}>
+              {obstacleStatus.badge}
+            </span>
+          </div>
+
+          <div className="bg-[#060e20] p-2.5 rounded-lg border border-outline-variant/30 flex flex-col gap-2 font-mono">
+            <div className="flex items-baseline justify-between">
+              <div className="flex items-baseline gap-2">
+                <span className={`text-[22px] font-bold leading-none ${obstacleStatus.textColor}`}>
+                  {obstacleDistance.toFixed(2)} m
+                </span>
+                <span className="text-[11px] text-outline">Clearance</span>
+              </div>
+              <span className={`text-[12px] font-bold ${obstacleStatus.textColor}`}>
+                {obstacleStatus.label}
+              </span>
+            </div>
+
+            {/* Clearance Range Bar */}
+            <div className="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+              <div
+                className={`h-full ${obstacleStatus.barColor} transition-all duration-300`}
+                style={{ width: `${Math.min(100, (obstacleDistance / 2.5) * 100)}%` }}
+              ></div>
+            </div>
+
+            {/* Demo Obstacle Presets */}
+            <div className="flex items-center justify-between pt-0.5 text-[10.5px] text-outline">
+              <span>SIMULATE:</span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setObstacleDistance(1.8)}
+                  className="px-2 py-0.5 rounded bg-surface-container-high hover:text-emerald-400 border border-outline-variant/30"
+                >
+                  1.8m
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setObstacleDistance(0.6)}
+                  className="px-2 py-0.5 rounded bg-surface-container-high hover:text-amber-400 border border-outline-variant/30"
+                >
+                  0.6m
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setObstacleDistance(0.25)}
+                  className="px-2 py-0.5 rounded bg-surface-container-high hover:text-rose-400 border border-outline-variant/30"
+                >
+                  0.25m
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* MPU6050 IMU TELEMETRY */}
+        <section className="bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3.5 shadow-sm flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[20px]">screen_rotation</span>
+              <h3 className="font-bold text-[13.5px] tracking-wider uppercase text-on-surface">
+                MPU6050 IMU TELEMETRY
+              </h3>
+            </div>
+            <span className="text-[10.5px] px-2 py-0.5 rounded border font-semibold text-emerald-400 bg-emerald-950/30 border-emerald-600/40 font-mono">
+              {mpu6050Data.stability}
+            </span>
+          </div>
+
+          <div className="bg-[#060e20] p-2.5 rounded-lg border border-outline-variant/30 flex flex-col gap-1.5 font-mono">
+            <div className="grid grid-cols-3 gap-1.5 text-center text-[11.5px]">
+              <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
+                <span className="text-outline text-[10px] uppercase block">Pitch</span>
+                <span className="font-bold text-on-surface mt-0.5 block">{currentMpu.pitch}</span>
+              </div>
+              <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
+                <span className="text-outline text-[10px] uppercase block">Roll</span>
+                <span className="font-bold text-on-surface mt-0.5 block">{currentMpu.roll}</span>
+              </div>
+              <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
+                <span className="text-outline text-[10px] uppercase block">Tilt</span>
+                <span className="font-bold text-on-surface mt-0.5 block">{currentMpu.tilt}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5 text-center text-[11px]">
+              <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
+                <span className="text-outline text-[10px] uppercase block">Impact</span>
+                <span className="font-bold text-sky-400 mt-0.5 block truncate">{currentMpu.impact}</span>
+              </div>
+              <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
+                <span className="text-outline text-[10px] uppercase block">Rollover Risk</span>
+                <span className="font-bold text-emerald-400 mt-0.5 block">{currentMpu.rolloverRisk}</span>
+              </div>
+              <div className="bg-surface-container/40 p-1.5 rounded border border-outline-variant/20">
+                <span className="text-outline text-[10px] uppercase block">Stability</span>
+                <span className="font-bold text-emerald-400 mt-0.5 block">{currentMpu.stability}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 5. LIVE SENSOR SNAPSHOT (10 METRICS)                                      */}
+      {/* ========================================================================= */}
+      <section className="bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3.5 shadow-sm flex flex-col gap-2.5">
+        <div className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-[20px]">sensors</span>
+            <h3 className="font-bold text-[14px] md:text-[15px] tracking-wider uppercase text-on-surface">
+              LIVE ROVER SENSOR SNAPSHOT &bull; TELEMETRY OVERVIEW
+            </h3>
+          </div>
+          <span className="font-mono text-[11px] text-outline uppercase">
+            ESP32 PAYLOAD UPLINK &bull; CONTINUOUS REFRESH
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 font-mono text-[12px]">
+          {currentSensorSnapshot.map((s) => (
+            <div
+              key={s.id}
+              className="bg-[#060e20] p-2.5 rounded border border-outline-variant/30 flex flex-col justify-between min-h-[85px]"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-outline uppercase font-semibold truncate">{s.label}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded border font-semibold ${s.statusClass}`}>
+                  {s.status}
+                </span>
+              </div>
+              <span className="text-[18px] font-bold text-on-surface mt-1">
+                {s.value}
+              </span>
+              <span className="text-[10.5px] text-outline truncate">{s.sensor}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }

@@ -1,6 +1,52 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import ThermalOverlay from '../components/map/ThermalOverlay';
+import ThermalLegend from '../components/map/ThermalLegend';
+import PlanViewCanvas from '../components/map/PlanViewCanvas';
+import { getThermalData } from '../data/thermalMapData';
 
 export default function HazardIntel() {
+  // Map viewport & thermal visualization state
+  const [viewMode, setViewMode] = useState('2d');
+  const [thermalOverlay, setThermalOverlay] = useState(false);
+  const [selectedElevation, setSelectedElevation] = useState('L3');
+  const [layerFilters, setLayerFilters] = useState({
+    rover: true,
+    gas: true,
+    refuges: true,
+    mesh: true,
+  });
+  const [measureActive, setMeasureActive] = useState(false);
+  const [focusPulse, setFocusPulse] = useState(false);
+  const [actionToast, setActionToast] = useState(null);
+  const [telemetry, setTelemetry] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchTelemetry = async () => {
+      try {
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const res = await fetch(`${API_BASE_URL}/api/telemetry`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (isMounted) setTelemetry(data);
+      } catch {
+        // Retain demo fallback telemetry gracefully
+      }
+    };
+    fetchTelemetry();
+    const interval = setInterval(fetchTelemetry, 3000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const thermalData = getThermalData(telemetry);
+
+  const toggleLayer = (layerKey) => {
+    setLayerFilters((prev) => ({ ...prev, [layerKey]: !prev[layerKey] }));
+  };
+
   // Environmental Trend Analysis active metric
   const [activeMetric, setActiveMetric] = useState('CH4');
 
@@ -144,6 +190,84 @@ export default function HazardIntel() {
       areaD: 'M 30,44 L 110,46 L 190,48 L 270,52 L 350,50 L 430,48 L 510,48 L 510,140 L 30,140 Z',
       warningY: 90,
       criticalY: 115,
+    },
+    NO2: {
+      name: 'NO2 Nitrogen Dioxide',
+      sensor: 'EC Sensor (Simulated)',
+      unit: 'PPM',
+      current: '0.3 PPM',
+      normal: '< 1.0 PPM',
+      warning: '3.0 PPM',
+      critical: '5.0 PPM',
+      status: 'SAFE',
+      statusColor: 'text-tertiary bg-tertiary-container/20 border-tertiary/30',
+      strokeColor: '#62df7d',
+      fillGradId: 'grad-no2',
+      points: [
+        { x: 30, y: 118, val: '0.2 PPM' },
+        { x: 110, y: 115, val: '0.2 PPM' },
+        { x: 190, y: 112, val: '0.3 PPM' },
+        { x: 270, y: 114, val: '0.3 PPM' },
+        { x: 350, y: 112, val: '0.3 PPM' },
+        { x: 430, y: 110, val: '0.3 PPM' },
+        { x: 510, y: 112, val: '0.3 PPM' },
+      ],
+      pathD: 'M 30,118 L 110,115 L 190,112 L 270,114 L 350,112 L 430,110 L 510,112',
+      areaD: 'M 30,118 L 110,115 L 190,112 L 270,114 L 350,112 L 430,110 L 510,112 L 510,140 L 30,140 Z',
+      warningY: 60,
+      criticalY: 25,
+    },
+    SO2: {
+      name: 'SO2 Sulfur Dioxide',
+      sensor: 'EC Sensor (Simulated)',
+      unit: 'PPM',
+      current: '0.4 PPM',
+      normal: '< 1.0 PPM',
+      warning: '2.0 PPM',
+      critical: '5.0 PPM',
+      status: 'SAFE',
+      statusColor: 'text-tertiary bg-tertiary-container/20 border-tertiary/30',
+      strokeColor: '#62df7d',
+      fillGradId: 'grad-so2',
+      points: [
+        { x: 30, y: 116, val: '0.3 PPM' },
+        { x: 110, y: 114, val: '0.4 PPM' },
+        { x: 190, y: 115, val: '0.4 PPM' },
+        { x: 270, y: 112, val: '0.4 PPM' },
+        { x: 350, y: 114, val: '0.4 PPM' },
+        { x: 430, y: 112, val: '0.4 PPM' },
+        { x: 510, y: 114, val: '0.4 PPM' },
+      ],
+      pathD: 'M 30,116 L 110,114 L 190,115 L 270,112 L 350,114 L 430,112 L 510,114',
+      areaD: 'M 30,116 L 110,114 L 190,115 L 270,112 L 350,114 L 430,112 L 510,114 L 510,140 L 30,140 Z',
+      warningY: 65,
+      criticalY: 25,
+    },
+    CO2: {
+      name: 'CO2 Carbon Dioxide',
+      sensor: 'NDIR Sensor (Simulated)',
+      unit: 'PPM',
+      current: '580 PPM',
+      normal: '< 1000 PPM',
+      warning: '2500 PPM',
+      critical: '5000 PPM',
+      status: 'SAFE',
+      statusColor: 'text-tertiary bg-tertiary-container/20 border-tertiary/30',
+      strokeColor: '#62df7d',
+      fillGradId: 'grad-co2',
+      points: [
+        { x: 30, y: 105, val: '540 PPM' },
+        { x: 110, y: 102, val: '550 PPM' },
+        { x: 190, y: 98, val: '565 PPM' },
+        { x: 270, y: 96, val: '570 PPM' },
+        { x: 350, y: 95, val: '575 PPM' },
+        { x: 430, y: 92, val: '580 PPM' },
+        { x: 510, y: 92, val: '580 PPM' },
+      ],
+      pathD: 'M 30,105 L 110,102 L 190,98 L 270,96 L 350,95 L 430,92 L 510,92',
+      areaD: 'M 30,105 L 110,102 L 190,98 L 270,96 L 350,95 L 430,92 L 510,92 L 510,140 L 30,140 Z',
+      warningY: 60,
+      criticalY: 20,
     },
     Temperature: {
       name: 'Ambient Temperature',
@@ -325,112 +449,575 @@ export default function HazardIntel() {
         </div>
 
         {/* ========================================================================= */}
-        {/* 1. LIVE SENSOR SUMMARY (6 COMPACT CARDS) */}
+        {/* 1. LIVE GAS & HAZARD SENSOR MONITORING (7 COMPACT CARDS) */}
         {/* ========================================================================= */}
-        <section className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 w-full shrink-0">
+        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-2 w-full shrink-0">
           {[
             {
-              title: <>CH4 &bull; Methane</>,
+              gas: 'CH4',
+              name: 'Methane',
               sensor: 'MQ-4 Analog',
-              status: 'WARNING',
-              badge: 'text-amber-400 bg-amber-950/30 border-amber-600/40',
+              status: 'WARN',
+              fullStatus: 'WARNING',
+              badge: 'text-amber-400 bg-amber-950/40 border-amber-600/40',
               val: '1.15%',
-              valClass: 'text-[21px] font-bold font-mono text-amber-400',
-              delta: <>&Delta; +0.08%/10m &uarr;</>,
-              deltaClass: 'font-mono text-[11.5px] text-amber-400 flex items-center gap-0.5',
-              footL: 'Threshold: 1.00%',
+              valClass: 'text-[18px] font-bold font-mono text-amber-400',
+              delta: '+0.08% ↑',
+              deltaClass: 'font-mono text-[10.5px] text-amber-400',
+              footL: 'Max 1%',
               footR: 'Elevated',
               footRClass: 'text-amber-400 font-medium',
             },
             {
-              title: <>CO &bull; Carbon Mon</>,
-              sensor: 'MQ-7 Sensor',
+              gas: 'H2S',
+              name: 'Hyd Sulfide',
+              sensor: 'MQ-136 Gas',
               status: 'SAFE',
-              badge: 'text-tertiary bg-tertiary-container/20 border-tertiary/30',
-              val: '14 PPM',
-              valClass: 'text-[21px] font-bold font-mono text-tertiary',
-              delta: <>&Delta; -2 PPM &darr;</>,
-              deltaClass: 'font-mono text-[11.5px] text-tertiary flex items-center gap-0.5',
-              footL: 'Limit: 35 PPM',
-              footR: 'Stable',
-              footRClass: 'text-tertiary font-medium',
-            },
-            {
-              title: <>H2S &bull; Hyd Sulfide</>,
-              sensor: 'MQ-136 Sensor',
-              status: 'SAFE',
+              fullStatus: 'SAFE',
               badge: 'text-tertiary bg-tertiary-container/20 border-tertiary/30',
               val: '1.8 PPM',
-              valClass: 'text-[21px] font-bold font-mono text-tertiary',
-              delta: <>&Delta; 0.0 &mdash;</>,
-              deltaClass: 'font-mono text-[11.5px] text-outline flex items-center gap-0.5',
-              footL: 'Limit: 10 PPM',
+              valClass: 'text-[18px] font-bold font-mono text-tertiary',
+              delta: '0.0 —',
+              deltaClass: 'font-mono text-[10.5px] text-outline',
+              footL: 'Lim 10',
               footR: 'Nominal',
               footRClass: 'text-tertiary font-medium',
             },
             {
-              title: <>O2 &bull; Oxygen Level</>,
-              sensor: 'Dedicated O2 Cell',
+              gas: 'O2',
+              name: 'Oxygen',
+              sensor: 'EC Cell',
               status: 'SAFE',
+              fullStatus: 'SAFE',
               badge: 'text-tertiary bg-tertiary-container/20 border-tertiary/30',
               val: '20.8%',
-              valClass: 'text-[21px] font-bold font-mono text-primary',
-              delta: <>&Delta; 0.0 &mdash;</>,
-              deltaClass: 'font-mono text-[11.5px] text-outline flex items-center gap-0.5',
-              footL: 'Safe: >19.5%',
+              valClass: 'text-[18px] font-bold font-mono text-primary',
+              delta: '0.0 —',
+              deltaClass: 'font-mono text-[10.5px] text-outline',
+              footL: '> 19.5%',
               footR: 'Optimal',
               footRClass: 'text-tertiary font-medium',
             },
             {
-              title: 'Smoke / AQ',
-              sensor: 'MQ-2 + MQ-135',
+              gas: 'CO',
+              name: 'Carbon Mon',
+              sensor: 'MQ-7 Sensor',
               status: 'SAFE',
+              fullStatus: 'SAFE',
               badge: 'text-tertiary bg-tertiary-container/20 border-tertiary/30',
-              val: '46 AQI',
-              valClass: 'text-[21px] font-bold font-mono text-tertiary',
-              delta: <>&Delta; -4 AQI &darr;</>,
-              deltaClass: 'font-mono text-[11.5px] text-tertiary flex items-center gap-0.5',
-              footL: 'Baseline: <50 AQI',
-              footR: 'Clear',
+              val: '14 PPM',
+              valClass: 'text-[18px] font-bold font-mono text-tertiary',
+              delta: '-2 PPM ↓',
+              deltaClass: 'font-mono text-[10.5px] text-tertiary',
+              footL: 'Lim 35',
+              footR: 'Stable',
               footRClass: 'text-tertiary font-medium',
             },
             {
-              title: 'Environment',
-              sensor: 'DHT22 Digital',
+              gas: 'NO2',
+              name: 'Nitrogen Diox',
+              sensor: 'EC (Sim)',
               status: 'SAFE',
+              fullStatus: 'SAFE',
               badge: 'text-tertiary bg-tertiary-container/20 border-tertiary/30',
-              val: '26.8°C',
-              valClass: 'text-[19px] font-bold font-mono text-on-surface',
-              delta: '68% RH',
-              deltaClass: 'font-mono text-[13.5px] text-outline',
-              footL: 'Dew Point: 20.4°C',
-              footR: 'Normal',
+              val: '0.3 PPM',
+              valClass: 'text-[18px] font-bold font-mono text-tertiary',
+              delta: '0.0 —',
+              deltaClass: 'font-mono text-[10.5px] text-outline',
+              footL: 'Lim 3.0',
+              footR: 'Nominal',
+              footRClass: 'text-tertiary font-medium',
+            },
+            {
+              gas: 'SO2',
+              name: 'Sulfur Diox',
+              sensor: 'EC (Sim)',
+              status: 'SAFE',
+              fullStatus: 'SAFE',
+              badge: 'text-tertiary bg-tertiary-container/20 border-tertiary/30',
+              val: '0.4 PPM',
+              valClass: 'text-[18px] font-bold font-mono text-tertiary',
+              delta: '0.0 —',
+              deltaClass: 'font-mono text-[10.5px] text-outline',
+              footL: 'Lim 2.0',
+              footR: 'Nominal',
+              footRClass: 'text-tertiary font-medium',
+            },
+            {
+              gas: 'CO2',
+              name: 'Carbon Diox',
+              sensor: 'NDIR (Sim)',
+              status: 'SAFE',
+              fullStatus: 'SAFE',
+              badge: 'text-tertiary bg-tertiary-container/20 border-tertiary/30',
+              val: '580 PPM',
+              valClass: 'text-[18px] font-bold font-mono text-tertiary',
+              delta: '+12 PPM ↑',
+              deltaClass: 'font-mono text-[10.5px] text-outline',
+              footL: 'Lim 5000',
+              footR: 'Nominal',
               footRClass: 'text-tertiary font-medium',
             },
           ].map((c, idx) => (
             <div
               key={idx}
-              className="bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3 shadow-sm flex flex-col justify-between min-h-[115px]"
+              className="bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-2 shadow-sm flex flex-col justify-between min-h-[108px] overflow-hidden"
             >
-              <div className="flex items-start justify-between gap-1">
-                <div>
-                  <span className="font-mono text-[13px] font-bold text-on-surface uppercase block">{c.title}</span>
-                  <span className="font-mono text-[11.5px] text-outline block">{c.sensor}</span>
-                </div>
-                <span className={`font-mono text-[11.5px] ${c.badge} border px-2 py-0.5 rounded font-semibold`}>
+              <div className="flex items-center justify-between gap-1">
+                <span className="font-mono text-[13px] font-bold text-on-surface uppercase tracking-wide">
+                  {c.gas}
+                </span>
+                <span className={`font-mono text-[10px] ${c.badge} border px-1.5 py-0.2 rounded font-semibold shrink-0`}>
                   {c.status}
                 </span>
               </div>
-              <div className="my-1 flex items-baseline justify-between">
+              <div className="font-mono text-[10.5px] text-outline truncate leading-tight">
+                {c.name}
+              </div>
+              <div className="my-0.5 flex items-baseline justify-between gap-1">
                 <span className={c.valClass}>{c.val}</span>
                 <span className={c.deltaClass}>{c.delta}</span>
               </div>
-              <div className="pt-1 border-t border-outline-variant/20 flex items-center justify-between text-[11.5px] font-mono text-outline">
-                <span>{c.footL}</span>
+              <div className="pt-1 border-t border-outline-variant/20 flex items-center justify-between text-[10px] font-mono text-outline leading-none">
+                <span className="truncate">{c.footL}</span>
                 <span className={c.footRClass}>{c.footR}</span>
               </div>
             </div>
           ))}
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 2. MINE HAZARD & THERMAL SPATIAL ANALYSIS MAP (2D & PLAN VIEW) */}
+        {/* ========================================================================= */}
+        <section className="bg-surface-container-low/90 border border-outline-variant/30 rounded-lg p-3 flex flex-col gap-2.5 shadow-sm font-mono shrink-0">
+          {/* Header & Mode Switcher Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[20px]">explore</span>
+              <div className="flex flex-col">
+                <h2 className="font-bold text-[14px] text-on-surface uppercase tracking-wider leading-tight">
+                  Mine Hazard &amp; Thermal Spatial Analysis Map
+                </h2>
+                <span className="text-[11px] text-outline">
+                  Sub-surface hazard localization, gas plume mapping &bull; AMG8833 IR thermal overlay
+                </span>
+              </div>
+            </div>
+
+            {/* View Mode & Thermal Overlay Buttons */}
+            <div className="flex items-center gap-1.5 bg-surface-container-lowest p-1 rounded border border-outline-variant/30 text-[12.5px]">
+              <button
+                className={`px-3 py-1.5 rounded font-bold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer ${
+                  viewMode === '2d'
+                    ? 'bg-primary text-[#003351]'
+                    : 'text-on-surface-variant hover:text-on-surface font-medium'
+                }`}
+                onClick={() => setViewMode('2d')}
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[16px]">layers</span> 2D Cross-Section
+              </button>
+              <button
+                className={`px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 font-medium cursor-pointer ${
+                  viewMode === 'plan'
+                    ? 'bg-primary text-[#003351] font-bold shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+                onClick={() => setViewMode('plan')}
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[16px]">radar</span> Plan View
+              </button>
+              <button
+                aria-pressed={thermalOverlay}
+                className={`px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 cursor-pointer ${
+                  thermalOverlay
+                    ? 'bg-primary text-[#003351] font-bold shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface font-medium'
+                }`}
+                data-state={thermalOverlay ? 'on' : 'off'}
+                onClick={() => setThermalOverlay((prev) => !prev)}
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[16px]">device_thermostat</span> Thermal Overlay
+              </button>
+            </div>
+
+            {/* Tools */}
+            <div className="flex items-center gap-2 text-[12px]">
+              <button
+                className={`px-2.5 py-1.5 border rounded flex items-center gap-1 transition-colors font-medium cursor-pointer ${
+                  measureActive
+                    ? 'bg-sky-950/70 border-primary text-primary shadow-sm font-semibold'
+                    : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-on-surface-variant hover:text-on-surface'
+                }`}
+                onClick={() => setMeasureActive((prev) => !prev)}
+                title="Measure Gallery Distance"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[15px] text-primary">straighten</span> Measure
+              </button>
+              <button
+                className="px-2.5 py-1.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 rounded text-on-surface-variant hover:text-on-surface flex items-center gap-1 transition-colors font-medium cursor-pointer"
+                onClick={() => {
+                  setFocusPulse(true);
+                  setActionToast('Focused Rover R-01: Station 14A (-850.4m)');
+                  setTimeout(() => setFocusPulse(false), 2200);
+                  setTimeout(() => setActionToast(null), 3500);
+                }}
+                title="Focus Rover Coordinates"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[15px] text-tertiary">center_focus_strong</span> Focus Rover
+              </button>
+              <button
+                className="px-2.5 py-1.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 rounded text-on-surface-variant hover:text-on-surface flex items-center gap-1 transition-colors font-medium cursor-pointer"
+                onClick={() => {
+                  const dataStr =
+                    'data:text/json;charset=utf-8,' +
+                    encodeURIComponent(
+                      JSON.stringify(
+                        {
+                          timestamp: new Date().toISOString(),
+                          sector: 'Sector 4 Drift C',
+                          roverId: 'ROVER-R01',
+                          depth: -850.4,
+                          viewMode,
+                          telemetry: telemetry || 'simulated_fallback',
+                          thermal: thermalData,
+                        },
+                        null,
+                        2
+                      )
+                    );
+                  const a = document.createElement('a');
+                  a.href = dataStr;
+                  a.download = `hazard_intel_map_log_${Date.now()}.json`;
+                  a.click();
+                  setActionToast('Hazard log exported successfully');
+                  setTimeout(() => setActionToast(null), 3500);
+                }}
+                title="Export Hazard Telemetry Log"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[15px] text-outline">download</span> Export Log
+              </button>
+            </div>
+          </div>
+
+          {/* Sub-row: Depth Elevation Filters & Layer Toggles */}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/20 pt-2 text-[11.5px]">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-outline uppercase font-semibold mr-1">Elevations:</span>
+              {[
+                { id: 'ALL', label: 'All Levels' },
+                { id: 'L1', label: 'L1: -350m' },
+                { id: 'L2', label: 'L2: -620m' },
+                { id: 'L3', label: 'L3: -850m' },
+                { id: 'SUMP', label: 'Sump: -900m' },
+              ].map((elev) => (
+                <button
+                  key={elev.id}
+                  className={`px-2 py-0.5 rounded border text-[11px] font-semibold transition-colors cursor-pointer ${
+                    selectedElevation === elev.id
+                      ? 'bg-sky-950/60 border-primary/40 text-primary'
+                      : 'bg-surface-container/60 hover:bg-surface-container-high border-outline-variant/20 text-on-surface-variant'
+                  }`}
+                  onClick={() => setSelectedElevation(elev.id)}
+                  type="button"
+                >
+                  {elev.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <label className="flex items-center gap-1.5 text-on-surface-variant bg-surface-container/50 px-2 py-0.5 rounded border border-outline-variant/20 cursor-pointer text-[11px]">
+                <input
+                  checked={layerFilters.rover}
+                  onChange={() => toggleLayer('rover')}
+                  className="rounded bg-surface-container-lowest border-outline-variant/40 text-primary w-3.5 h-3.5 cursor-pointer"
+                  type="checkbox"
+                />
+                <span className="text-primary font-semibold">Rover R-01</span>
+              </label>
+              <label className="flex items-center gap-1.5 text-on-surface-variant bg-surface-container/50 px-2 py-0.5 rounded border border-outline-variant/20 cursor-pointer text-[11px]">
+                <input
+                  checked={layerFilters.gas}
+                  onChange={() => toggleLayer('gas')}
+                  className="rounded bg-surface-container-lowest border-outline-variant/40 text-primary w-3.5 h-3.5 cursor-pointer"
+                  type="checkbox"
+                />
+                <span className="text-secondary font-semibold">Gas Advisory (CH4)</span>
+              </label>
+              <label className="flex items-center gap-1.5 text-on-surface-variant bg-surface-container/50 px-2 py-0.5 rounded border border-outline-variant/20 cursor-pointer text-[11px]">
+                <input
+                  checked={layerFilters.refuges}
+                  onChange={() => toggleLayer('refuges')}
+                  className="rounded bg-surface-container-lowest border-outline-variant/40 text-primary w-3.5 h-3.5 cursor-pointer"
+                  type="checkbox"
+                />
+                <span className="text-tertiary font-semibold">Refuges (2)</span>
+              </label>
+              <label className="flex items-center gap-1.5 text-on-surface-variant bg-surface-container/50 px-2 py-0.5 rounded border border-outline-variant/20 cursor-pointer text-[11px]">
+                <input
+                  checked={layerFilters.mesh}
+                  onChange={() => toggleLayer('mesh')}
+                  className="rounded bg-surface-container-lowest border-outline-variant/40 text-primary w-3.5 h-3.5 cursor-pointer"
+                  type="checkbox"
+                />
+                <span className="text-sky-400 font-semibold">Sensor Mesh</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Map Canvas Viewport */}
+          <div className="relative min-h-[460px] md:h-[480px] bg-black rounded-xl border border-outline-variant/40 overflow-hidden shadow-2xl ring-1 ring-primary/20 flex flex-col">
+            {/* Toast Feedback */}
+            {actionToast && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-surface-container-high text-primary border border-primary/40 px-4 py-2 rounded-lg font-mono text-[12px] shadow-xl animate-fadeIn z-40 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                {actionToast}
+              </div>
+            )}
+
+            {viewMode === 'plan' ? (
+              <PlanViewCanvas
+                focusPulse={focusPulse}
+                layerFilters={layerFilters}
+                measureActive={measureActive}
+              >
+                {thermalOverlay && (
+                  <ThermalOverlay
+                    activeElevation={selectedElevation}
+                    hotspots={thermalData.hotspotsPlan}
+                    viewMode="plan"
+                  />
+                )}
+              </PlanViewCanvas>
+            ) : (
+              /* SVG 2D Cross-Section Schematic Canvas */
+              <svg className="w-full h-full" fill="none" viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern height="30" id="grid-pattern" patternUnits="userSpaceOnUse" width="30">
+                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#131b2e" strokeDasharray="2 2" strokeWidth="0.6" />
+                  </pattern>
+                  <linearGradient id="rock-gradient" x1="0%" x2="0%" y1="0%" y2="100%">
+                    <stop offset="0%" stopColor="#080f1e" />
+                    <stop offset="50%" stopColor="#0a1324" />
+                    <stop offset="100%" stopColor="#050a14" />
+                  </linearGradient>
+                  <linearGradient id="ch4-cloud" x1="0%" x2="100%" y1="0%" y2="0%">
+                    <stop offset="0%" stopColor="#ffb77d" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#ffb77d" stopOpacity="0.05" />
+                  </linearGradient>
+                  <linearGradient id="vent-flow" x1="0%" x2="0%" y1="100%" y2="0%">
+                    <stop offset="0%" stopColor="#3198dc" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#93ccff" stopOpacity="0.1" />
+                  </linearGradient>
+                </defs>
+
+                {/* Background Strata */}
+                <rect fill="url(#rock-gradient)" height="520" width="760" />
+                <rect fill="url(#grid-pattern)" height="520" width="760" />
+
+                {/* Geological Strata Layers / Rock Formations */}
+                <path d="M 60 50 Q 280 45 480 55 T 750 48" stroke="#2d3449" strokeDasharray="3 3" strokeWidth="1.2" />
+                <text fill="#89929b" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="600" x="610" y="42">SURFACE CAP [0.0m]</text>
+                <path d="M 60 170 Q 250 160 520 175 T 750 165" stroke="#1f283d" strokeDasharray="4 2" strokeWidth="1" />
+                <text fill="#89929b" fontFamily="JetBrains Mono, monospace" fontSize="11.5" x="550" y="160">SANDSTONE AQUIFER SHIELD</text>
+                <path d="M 60 305 Q 310 295 560 312 T 750 300" stroke="#1f283d" strokeDasharray="4 2" strokeWidth="1" />
+                <text fill="#89929b" fontFamily="JetBrains Mono, monospace" fontSize="11.5" x="580" y="295">ORE VEIN ALPHA FAULT</text>
+                <path d="M 60 435 Q 330 425 580 440 T 750 430" stroke="#1f283d" strokeDasharray="4 2" strokeWidth="1" />
+                <text fill="#89929b" fontFamily="JetBrains Mono, monospace" fontSize="11.5" x="560" y="425">BASALT BEDROCK (-880m)</text>
+
+                {/* VERTICAL SHAFTS */}
+                {/* Shaft 1 (Main Access / Hoist) */}
+                <rect fill="#131b2e" height="445" stroke="#3f4850" strokeWidth="1.5" width="28" x="170" y="45" />
+                <line stroke="#3198dc" strokeDasharray="4 4" strokeWidth="1" x1="184" x2="184" y1="45" y2="490" />
+                {/* Hoist Cage Visual */}
+                <rect fill="#222a3d" height="28" rx="2" stroke="#93ccff" strokeWidth="1.5" width="22" x="173" y="240" />
+                <line stroke="#93ccff" strokeWidth="1" x1="178" x2="190" y1="254" y2="254" />
+                <text fill="#93ccff" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="bold" x="115" y="37">SHAFT 1 (MAIN HOIST)</text>
+
+                {/* Shaft 2 (Exhaust Air Plenum) */}
+                <rect fill="url(#vent-flow)" height="390" stroke="#3f4850" strokeWidth="1.5" width="24" x="540" y="45" />
+                <path d="M 552 430 L 552 50" stroke="#3198dc" strokeDasharray="6 4" strokeWidth="1.5" />
+                <text fill="#62df7d" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="bold" x="470" y="37">SHAFT 2 (AIR EXHAUST)</text>
+
+                {/* Surface Headframe & Portal */}
+                <polygon fill="none" points="160,45 184,15 208,45" stroke="#89929b" strokeWidth="1.5" />
+                <circle cx="184" cy="22" fill="none" r="6" stroke="#93ccff" strokeWidth="1.5" />
+
+                {/* HORIZONTAL DRIFTS / MINE LEVELS */}
+                {/* LEVEL 1: -350m Haulage Gallery */}
+                <g id="level-350m" opacity={selectedElevation === 'ALL' || selectedElevation === 'L1' ? 1 : 0.3}>
+                  <path d="M 198 135 L 540 135 L 680 135" stroke="#2d3449" strokeLinecap="round" strokeWidth="22" />
+                  <path d="M 198 135 L 540 135 L 680 135" stroke="#131b2e" strokeLinecap="round" strokeWidth="18" />
+                  <line stroke="#3f4850" strokeDasharray="4 3" strokeWidth="1" x1="200" x2="675" y1="140" y2="140" />
+                  <path d="M 230 132 L 245 132 M 310 132 L 325 132 M 450 132 L 465 132" stroke="#3198dc" strokeDasharray="3 3" strokeWidth="1.5" />
+                  <rect fill="#171f33" height="24" rx="3" stroke="#3f4850" strokeWidth="1" width="98" x="70" y="123" />
+                  <text fill="#dae2fd" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="bold" x="76" y="139">L1 -350m</text>
+                  <rect fill="#131b2e" height="20" rx="3" stroke="#3f4850" strokeWidth="1" width="115" x="375" y="125" />
+                  <text fill="#89929b" fontFamily="JetBrains Mono, monospace" fontSize="11.5" x="382" y="139">North Drift Entry</text>
+                </g>
+
+                {/* LEVEL 2: -620m Ore Gallery */}
+                <g id="level-620m" opacity={selectedElevation === 'ALL' || selectedElevation === 'L2' ? 1 : 0.3}>
+                  <path d="M 198 250 L 320 250 L 370 270 L 540 270 L 710 270" stroke="#2d3449" strokeLinecap="round" strokeWidth="22" />
+                  <path d="M 198 250 L 320 250 L 370 270 L 540 270 L 710 270" stroke="#131b2e" strokeLinecap="round" strokeWidth="18" />
+                  <rect fill="#171f33" height="24" rx="3" stroke="#3f4850" strokeWidth="1" width="98" x="70" y="238" />
+                  <text fill="#dae2fd" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="bold" x="76" y="254">L2 -620m</text>
+                  {/* Refuge Chamber A */}
+                  {layerFilters.refuges && (
+                    <g>
+                      <rect fill="#171f33" height="24" rx="3" stroke="#62df7d" strokeWidth="1.5" width="118" x="395" y="257" />
+                      <text fill="#62df7d" fontFamily="JetBrains Mono, monospace" fontSize="11.5" fontWeight="bold" x="402" y="273">REFUGE CHAMBER A</text>
+                    </g>
+                  )}
+                  <rect fill="#131b2e" height="20" rx="3" stroke="#3f4850" strokeWidth="1" width="120" x="215" y="240" />
+                  <text fill="#89929b" fontFamily="JetBrains Mono, monospace" fontSize="11.5" x="222" y="254">Mid Crosscut Safe</text>
+                </g>
+
+                {/* LEVEL 3: -850m Sub-Surface Drift C (ACTIVE HAZARD FOCUS) */}
+                <g id="level-850m" opacity={selectedElevation === 'ALL' || selectedElevation === 'L3' ? 1 : 0.3}>
+                  <path d="M 198 385 L 290 385 L 340 405 L 540 405 L 720 405" opacity="0.2" stroke="#3198dc" strokeLinecap="round" strokeWidth="24" />
+                  <path d="M 198 385 L 290 385 L 340 405 L 540 405 L 720 405" stroke="#2d3449" strokeLinecap="round" strokeWidth="22" />
+                  <path d="M 198 385 L 290 385 L 340 405 L 540 405 L 720 405" stroke="#060e20" strokeLinecap="round" strokeWidth="18" />
+
+                  {/* METHANE GAS ADVISORY ZONE HIGHLIGHT */}
+                  {layerFilters.gas && (
+                    <g>
+                      <rect fill="url(#ch4-cloud)" height="34" rx="4" stroke="#d97707" strokeDasharray="4 3" strokeWidth="1.5" width="220" x="415" y="387" />
+                      <text fill="#ffb77d" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="bold" x="422" y="383">⚠️ ADVISORY: CH4 1.15% (STATION 14A)</text>
+                    </g>
+                  )}
+
+                  {/* Level Marker Focus Pill */}
+                  <rect fill="#004b73" height="24" rx="3" stroke="#93ccff" strokeWidth="1.5" width="98" x="70" y="373" />
+                  <text fill="#cce5ff" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="bold" x="76" y="389">L3 -850m ★</text>
+
+                  {/* Active Rover R-01 (Manual Teleop) with Sensor Sweep Cone */}
+                  {layerFilters.rover && (
+                    <g className={focusPulse ? 'animate-bounce' : ''}>
+                      <path d="M 480 405 L 420 385 L 420 425 Z" fill="#93ccff" fillOpacity="0.15" stroke="#93ccff" strokeDasharray="2 2" strokeWidth="0.8" />
+                      <circle cx="480" cy="405" fill="#3198dc" r="6" stroke="#93ccff" strokeWidth="1.5" />
+                      <rect fill="#002c47" height="22" rx="3" stroke="#93ccff" strokeWidth="1.2" width="144" x="490" y="394" />
+                      <text fill="#93ccff" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="bold" x="496" y="409">🤖 ROVER R-01 [MANUAL]</text>
+                    </g>
+                  )}
+
+                  {/* Refuge Chamber B */}
+                  {layerFilters.refuges && (
+                    <g>
+                      <rect fill="#171f33" height="24" rx="3" stroke="#62df7d" strokeWidth="1.5" width="118" x="270" y="372" />
+                      <text fill="#62df7d" fontFamily="JetBrains Mono, monospace" fontSize="11.5" fontWeight="bold" x="276" y="388">REFUGE CHAMBER B</text>
+                    </g>
+                  )}
+                </g>
+
+                {/* LEVEL 4: -900m DRAINAGE SUMP */}
+                <g id="level-sump" opacity={selectedElevation === 'ALL' || selectedElevation === 'SUMP' ? 1 : 0.3}>
+                  <path d="M 198 470 L 330 470 L 360 485 L 540 485" stroke="#2d3449" strokeLinecap="round" strokeWidth="16" />
+                  <path d="M 198 470 L 330 470 L 360 485 L 540 485" stroke="#060e20" strokeLinecap="round" strokeWidth="12" />
+                  <rect fill="#171f33" height="24" rx="3" stroke="#3f4850" strokeWidth="1" width="98" x="70" y="458" />
+                  <text fill="#dae2fd" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="bold" x="76" y="474">SUMP -900m</text>
+                  <rect fill="#002c47" height="18" rx="2" stroke="#3198dc" strokeWidth="1" width="105" x="420" y="476" />
+                  <text fill="#93ccff" fontFamily="JetBrains Mono, monospace" fontSize="11.5" x="426" y="489">⚡ SUMP PUMP ON</text>
+                </g>
+
+                {/* SENSOR MESH OVERLAY (2D) */}
+                {layerFilters.mesh && (
+                  <g id="mesh-nodes-2d">
+                    <circle cx="184" cy="135" r="4.5" fill="#0284c7" stroke="#38bdf8" strokeWidth="1.5" />
+                    <circle cx="184" cy="385" r="4.5" fill="#0284c7" stroke="#38bdf8" strokeWidth="1.5" />
+                    <circle cx="552" cy="135" r="4.5" fill="#0284c7" stroke="#38bdf8" strokeWidth="1.5" />
+                    <line x1="184" y1="385" x2="480" y2="405" stroke="#38bdf8" strokeWidth="1" strokeDasharray="3 3" opacity="0.4" />
+                    <text fill="#38bdf8" fontFamily="JetBrains Mono, monospace" fontSize="10" x="195" y="380">MESH REPEATER L3</text>
+                  </g>
+                )}
+
+                {/* MEASURE TOOL OVERLAY (2D) */}
+                {measureActive && (
+                  <g id="2d-measure-active">
+                    <line x1="184" y1="385" x2="480" y2="405" stroke="#38bdf8" strokeWidth="1.8" strokeDasharray="4 2" />
+                    <rect x="300" y="382" width="76" height="18" rx="3" fill="#0284c7" />
+                    <text fill="#ffffff" fontFamily="JetBrains Mono, monospace" fontSize="10.5" fontWeight="bold" x="308" y="395">📏 296.2m</text>
+                  </g>
+                )}
+
+                {/* DEPTH RULER ELEVATION SCALE (Left Edge) */}
+                <line stroke="#3f4850" strokeWidth="1.5" x1="65" x2="65" y1="45" y2="495" />
+                <line stroke="#89929b" strokeWidth="1.5" x1="58" x2="65" y1="45" y2="45" />
+                <text fill="#89929b" fontFamily="JetBrains Mono, monospace" fontSize="12" x="18" y="49">0.0m</text>
+                <line stroke="#89929b" strokeWidth="1" x1="58" x2="65" y1="135" y2="135" />
+                <text fill="#89929b" fontFamily="JetBrains Mono, monospace" fontSize="12" x="10" y="139">-350m</text>
+                <line stroke="#89929b" strokeWidth="1" x1="58" x2="65" y1="250" y2="250" />
+                <text fill="#89929b" fontFamily="JetBrains Mono, monospace" fontSize="12" x="10" y="254">-620m</text>
+                <line stroke="#93ccff" strokeWidth="2" x1="56" x2="65" y1="385" y2="385" />
+                <text fill="#93ccff" fontFamily="JetBrains Mono, monospace" fontSize="12.5" fontWeight="bold" x="8" y="389">-850m</text>
+                <line stroke="#89929b" strokeWidth="1" x1="58" x2="65" y1="470" y2="470" />
+                <text fill="#89929b" fontFamily="JetBrains Mono, monospace" fontSize="12" x="10" y="474">-900m</text>
+
+                {/* Thermal Overlay layer inside 2D SVG */}
+                {thermalOverlay && (
+                  <ThermalOverlay
+                    activeElevation={selectedElevation}
+                    hotspots={thermalData.hotspots2D}
+                    viewMode="2d"
+                  />
+                )}
+              </svg>
+            )}
+
+            {/* FLOATING INDUSTRIAL THERMAL LEGEND */}
+            {thermalOverlay && (
+              <ThermalLegend
+                isSimulated={thermalData.isSimulated}
+                summary={thermalData.summary}
+              />
+            )}
+
+            {/* BOTTOM-LEFT HUD / COORDINATES */}
+            <div className="absolute bottom-3 left-3 flex items-center gap-2 font-mono text-[12px] pointer-events-auto">
+              <div className="bg-[#060e20]/90 backdrop-blur px-3 py-1.5 rounded-lg border border-outline-variant/40 flex items-center gap-2 shadow-lg">
+                <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+                <span className="text-outline">HAZARD COORDS:</span>
+                <span className="text-on-surface font-semibold">STA 14A</span>
+                <span className="text-primary font-bold">DEPTH: -850.4m</span>
+                <span className="text-secondary font-bold border-l border-outline-variant/40 pl-2">
+                  CH4: 1.15%
+                </span>
+                {thermalOverlay && (
+                  <span className="text-amber-400 font-bold border-l border-outline-variant/40 pl-2">
+                    HOTSPOT: 35.2°C
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* BOTTOM-RIGHT MAP LEGEND OVERLAY */}
+            <div className="absolute bottom-3 right-3 bg-[#060e20]/90 backdrop-blur px-3 py-1.5 rounded-lg border border-outline-variant/40 flex items-center gap-3 font-mono text-[11.5px] shadow-lg">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+                <span className="text-primary font-medium">Rover R-01</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm border border-secondary bg-secondary-container/40"></span>
+                <span className="text-secondary font-medium">Gas Advisory</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded border border-tertiary bg-tertiary-container/30"></span>
+                <span className="text-tertiary font-medium">Refuge Shelter</span>
+              </div>
+              {thermalOverlay && (
+                <div className="flex items-center gap-1.5 border-l border-outline-variant/40 pl-2.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-emerald-400 via-amber-400 to-red-500"></span>
+                  <span className="text-amber-300 font-medium">Thermal Active</span>
+                </div>
+              )}
+            </div>
+          </div>
         </section>
 
         {/* ========================================================================= */}
@@ -526,7 +1113,7 @@ export default function HazardIntel() {
 
             {/* Metric Switcher Tab Bar */}
             <div className="flex flex-wrap items-center gap-1.5 my-2 bg-surface-container-lowest p-1 rounded border border-outline-variant/30 font-mono text-[12px]">
-              {['CH4', 'CO', 'H2S', 'O2', 'Temperature', 'Humidity'].map((m) => (
+              {['CH4', 'H2S', 'O2', 'CO', 'NO2', 'SO2', 'CO2', 'Temperature', 'Humidity'].map((m) => (
                 <button
                   key={m}
                   onClick={() => setActiveMetric(m)}

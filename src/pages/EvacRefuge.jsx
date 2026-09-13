@@ -142,7 +142,93 @@ export default function EvacRefuge() {
         )}
 
         {/* ========================================================================= */}
-        {/* 1. EVACUATION OVERVIEW (4 COMPACT SUMMARY CARDS) */}
+        {/* 1. SEARCH & RESCUE FOCUS: WHO, WHERE & WHAT DIRECTIVE */}
+        {/* ========================================================================= */}
+        <section className="bg-surface-container-low/90 border-2 border-amber-500/50 rounded-lg p-3.5 shadow-md flex flex-col gap-3 shrink-0">
+          <div className="flex flex-wrap items-center justify-between border-b border-outline-variant/30 pb-2.5 gap-2">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-amber-400 text-[24px] animate-pulse">person_alert</span>
+              <div>
+                <h2 className="font-bold text-[15px] md:text-[16px] tracking-wider uppercase text-on-surface">
+                  PRIMARY SEARCH &amp; RESCUE DIRECTIVE
+                </h2>
+                <span className="font-mono text-[11px] text-amber-300">
+                  CRITICAL S&amp;R MISSION AM-07 &bull; HUMAN LOCATED IN SECTOR 4
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 font-mono text-[11.5px]">
+              <span className="px-2.5 py-0.5 rounded bg-amber-950/60 border border-amber-500/60 text-amber-300 font-bold animate-pulse">
+                1 VICTIM LOCALIZED
+              </span>
+              <span className="px-2.5 py-0.5 rounded bg-surface-container-high border border-outline-variant/30 text-emerald-400 font-semibold">
+                94.2% AI CONFIDENCE
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-[12px]">
+            {/* WHO needs help? */}
+            <div className="bg-[#060e20] p-3 rounded-lg border border-amber-500/30 flex flex-col justify-between">
+              <div>
+                <span className="text-amber-400 font-bold uppercase text-[11px] tracking-wider block">
+                  1. WHO NEEDS HELP?
+                </span>
+                <span className="text-on-surface font-bold text-[14px] mt-1 block">
+                  1 Worker &bull; 1 Possible Injured
+                </span>
+                <p className="text-[11.5px] text-on-surface-variant font-sans mt-1 leading-snug">
+                  AMG8833 Thermal detects human body heat anomaly at 35.2°C (&Delta; +15.8°C over rock wall). Victim is stationary near crosscut.
+                </p>
+              </div>
+              <div className="mt-2 pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[11px]">
+                <span className="text-outline">THERMAL:</span>
+                <span className="text-amber-300 font-bold">35.2°C (HOTSPOT)</span>
+              </div>
+            </div>
+
+            {/* WHERE are they? */}
+            <div className="bg-[#060e20] p-3 rounded-lg border border-sky-500/30 flex flex-col justify-between">
+              <div>
+                <span className="text-sky-400 font-bold uppercase text-[11px] tracking-wider block">
+                  2. WHERE ARE THEY?
+                </span>
+                <span className="text-on-surface font-bold text-[14px] mt-1 block">
+                  Drift C East Crosscut (Station 14A)
+                </span>
+                <p className="text-[11.5px] text-on-surface-variant font-sans mt-1 leading-snug">
+                  Sub-sea depth -850.4m, approximately 12 meters ahead of Rover R-01. Directly adjacent to blocked haulage drift.
+                </p>
+              </div>
+              <div className="mt-2 pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[11px]">
+                <span className="text-outline">COORDINATES:</span>
+                <span className="text-sky-300 font-bold">-850.4m &bull; STN 14A</span>
+              </div>
+            </div>
+
+            {/* WHAT action is required? */}
+            <div className="bg-[#060e20] p-3 rounded-lg border border-emerald-500/30 flex flex-col justify-between">
+              <div>
+                <span className="text-emerald-400 font-bold uppercase text-[11px] tracking-wider block">
+                  3. WHAT ACTION IS REQUIRED?
+                </span>
+                <span className="text-on-surface font-bold text-[14px] mt-1 block">
+                  Divert to Refuge R-01 (110m)
+                </span>
+                <p className="text-[11.5px] text-on-surface-variant font-sans mt-1 leading-snug">
+                  Forward drift blocked by rubble (0.38m sonar). Broadcast evacuation audio via PA speaker directing worker up North Ramp to Refuge R-01.
+                </p>
+              </div>
+              <div className="mt-2 pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[11px]">
+                <span className="text-outline">RECOMMENDED HAVEN:</span>
+                <span className="text-emerald-300 font-bold">R-01 (-350m, 110m)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 2. EVACUATION OVERVIEW (4 COMPACT SUMMARY CARDS) */}
         {/* ========================================================================= */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 w-full shrink-0">
           {/* Card 1: Active Hazard Zones */}
@@ -536,6 +622,21 @@ export default function EvacRefuge() {
                     ROVER R-01
                   </text>
                 </g>
+
+                {/* LOCALIZED WORKER / INJURED VICTIM MARKER */}
+                <g id="worker-victim" transform="translate(420, 365)">
+                  {/* Warning Radar Ping */}
+                  <circle cx="10" cy="10" r="16" fill="none" stroke="#f59e0b" strokeWidth="2" opacity="0.85" className="animate-ping" />
+                  {/* Person Icon Circle */}
+                  <circle cx="10" cy="10" r="10" fill="#451a03" stroke="#f59e0b" strokeWidth="1.5" />
+                  <circle cx="10" cy="7" r="3" fill="#fde68a" />
+                  <path d="M 6 15 Q 10 11 14 15" stroke="#fde68a" strokeWidth="2" fill="none" />
+                  {/* Tag */}
+                  <rect x="-42" y="-24" width="104" height="18" rx="2" fill="#060e20" stroke="#f59e0b" strokeWidth="1.2" />
+                  <text x="-38" y="-11" fill="#fde68a" fontFamily="JetBrains Mono, monospace" fontSize="9.5" fontWeight="bold">
+                    WORKER [35.2°C]
+                  </text>
+                </g>
               </g>
 
               {/* =================================================== */}
@@ -630,6 +731,10 @@ export default function EvacRefuge() {
                 <span className="text-on-surface font-medium">Rover R-01</span>
               </div>
               <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full border border-amber-400 bg-amber-500"></span>
+                <span className="text-amber-300 font-medium">Worker [35.2°C]</span>
+              </div>
+              <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-sm border border-emerald-500 bg-emerald-950/40"></span>
                 <span className="text-emerald-400 font-medium">Refuge Bay</span>
               </div>
@@ -720,25 +825,6 @@ export default function EvacRefuge() {
               <span className="px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-300 text-[11px] border border-emerald-600/40 font-semibold">
                 Operator Action Required
               </span>
-            </div>
-          </div>
-
-          {/* Concise Operational Insights */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-            <div className="bg-[#060e20] p-3 rounded-lg border-l-4 border-l-amber-500 border border-outline-variant/30 flex items-start gap-2.5">
-              <span className="material-symbols-outlined text-amber-400 text-[20px] shrink-0 mt-0.5">warning</span>
-              <div className="text-[12.5px] leading-relaxed">
-                <span className="font-bold text-amber-300 font-mono block text-[12px] uppercase">METHANE RESTRICTION ADVISORY</span>
-                South passage currently has elevated methane levels (1.05%). Operator should avoid this section until readings stabilize.
-              </div>
-            </div>
-
-            <div className="bg-[#060e20] p-3 rounded-lg border-l-4 border-l-rose-500 border border-outline-variant/30 flex items-start gap-2.5">
-              <span className="material-symbols-outlined text-rose-400 text-[20px] shrink-0 mt-0.5">block</span>
-              <div className="text-[12.5px] leading-relaxed">
-                <span className="font-bold text-rose-300 font-mono block text-[12px] uppercase">OBSTACLE DETECTED NEAR LEVEL -850</span>
-                Obstacle detected near Level -850 access tunnel (HC-SR04 Sonar: 0.38m). Alternative mine passage (North Bypass) should be assessed manually.
-              </div>
             </div>
           </div>
         </section>

@@ -643,7 +643,7 @@ export default function Settings() {
         {/* BOTTOM ACTION BAR */}
         <div className="flex items-center justify-between pt-2 border-t border-outline-variant/25 font-mono text-[12px]">
           <span className="text-outline text-[11.5px]">
-            CORNERSTONE MINE TELEOPERATION &bull; FIRMWARE V2.4.1
+            UNDERSTONE MINE TELEOPERATION &bull; FIRMWARE V2.4.1
           </span>
           <div className="flex items-center gap-2">
             <button
