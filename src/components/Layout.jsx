@@ -280,10 +280,23 @@ export default function Layout() {
                     </div>
                     <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-tertiary ring-1 ring-[#060e20]"></span>
                   </div>
-                  <div className="flex flex-col min-w-0">
+                  <div className="flex flex-col min-w-0 flex-1">
                     <span className="text-[13.5px] font-semibold text-on-surface leading-tight truncate">Control Desk Operator</span>
                     <span className="font-mono text-[11.5px] text-on-surface-variant/80 tracking-wide uppercase mt-0.5 truncate">MANUAL TELEOPERATOR</span>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sessionStorage.removeItem('understone_authenticated');
+                      localStorage.removeItem('understone_authenticated');
+                      window.location.href = '/login';
+                    }}
+                    className="p-1 rounded hover:bg-surface-container text-outline hover:text-error transition-colors shrink-0"
+                    title="Sign Out / Disconnect Terminal"
+                    aria-label="Sign Out"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">logout</span>
+                  </button>
                 </div>
                 <div className="bg-surface-container-low/90 rounded p-2.5 border border-outline-variant/25 font-mono text-[12px]">
                   <div className="flex items-center justify-between text-tertiary font-semibold">

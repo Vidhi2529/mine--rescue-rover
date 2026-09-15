@@ -5,12 +5,31 @@ import HazardIntel from './pages/HazardIntel';
 import EvacRefuge from './pages/EvacRefuge';
 import RoverControl from './pages/RoverControl';
 import Settings from './pages/Settings';
+import Login from './pages/Login';
+
+function ProtectedRoute({ children }) {
+  const isAuthenticated =
+    sessionStorage.getItem('understone_authenticated') === 'true' ||
+    localStorage.getItem('understone_authenticated') === 'true';
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<Layout />}>
+        <Route path="/login" element={<Login />} />
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="/" element={<Dashboard />} />
           <Route path="/mine-map" element={<Navigate to="/hazard-intel" replace />} />
           <Route path="/hazard-intel" element={<HazardIntel />} />
@@ -18,9 +37,10 @@ export default function App() {
           <Route path="/rover-control" element={<RoverControl />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
+
 

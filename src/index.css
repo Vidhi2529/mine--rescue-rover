@@ -94,4 +94,16 @@
   .gap-responsive {
     gap: clamp(8px, 0.6vw, 12px);
   }
+
+  .hud-grid-bg {
+    background-image: 
+      linear-gradient(to right, rgba(49, 152, 220, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(49, 152, 220, 0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .hud-glow-card {
+    box-shadow: 0 0 35px rgba(6, 14, 32, 0.8), inset 0 0 1px rgba(147, 204, 255, 0.2);
+  }
 }
+
