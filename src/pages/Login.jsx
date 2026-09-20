@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import sampleLoginMineBg from '../assets/sample_login_mine_bg.png';
+import understoneLoginLogo from '../assets/understone_login_logo.png';
 
-const UNDERSTONE_LOGO_URL =
-  'https://lh3.googleusercontent.com/aida/AEtjO1XPwq0TOPvCz3--wSH2KdxwBVm0TBHzPSktGOl12gF9zuzED0oy1PTsZ03hkg-Kn3hvZ-K__mJ2SvhYeU6q_PUijEoy1u2xLbe-4yiiULbYs5qZxwKycG7f2DQ9F1wM9dwrmSuFqk0mG7kH1S0Lw7IO2rUBA93J2cKcHSCj_k6iR-IP9AEKE-ruqboSmG8NhPQo6R0ACod_FbNf4tnbxcxcLKTeb_fr1cSOxk_049lO-oUDI62PNDHOH3M';
+const UNDERSTONE_LOGO_URL = understoneLoginLogo;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -82,13 +82,13 @@ export default function Login() {
       <main className="w-full max-w-[440px] z-10 my-auto">
         <div className="w-full bg-[#060e20]/95 backdrop-blur-xl border border-cyan-500/30 rounded-2xl p-6 sm:p-8 shadow-[0_16px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(6,182,212,0.14)] space-y-6 relative hud-glow-card">
           
-          {/* Card Header: Logo, Title, Subtitle, Tagline */}
-          <div className="flex flex-col items-center text-center space-y-2.5 pb-5 border-b border-outline-variant/25">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#0a162e] to-[#060e20] border border-cyan-400/40 flex items-center justify-center p-2.5 shadow-[0_0_20px_rgba(6,182,212,0.22)]">
+          {/* Card Header: Logo, Subtitle, Tagline */}
+          <div className="flex flex-col items-center text-center space-y-2 pb-5 border-b border-outline-variant/25">
+            <div className="w-full flex justify-center py-1">
               <img
                 src={UNDERSTONE_LOGO_URL}
                 alt="UnderStone Logo"
-                className="w-full h-full object-contain"
+                className="w-[180px] sm:w-[210px] max-w-full h-auto object-contain select-none filter drop-shadow-[0_2px_12px_rgba(6,182,212,0.2)]"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
                   e.currentTarget.src = '/favicon.svg';
@@ -97,9 +97,7 @@ export default function Login() {
             </div>
             
             <div className="space-y-1">
-              <h1 className="text-[23px] sm:text-[25px] font-bold text-white tracking-widest uppercase font-sans leading-tight">
-                UNDERSTONE
-              </h1>
+              <h1 className="sr-only">UNDERSTONE</h1>
               <div className="font-mono text-[11px] sm:text-[11.5px] font-semibold text-cyan-400 tracking-[0.16em] uppercase">
                 INDIAN MINE SAFETY &amp; RESCUE SYSTEM
               </div>

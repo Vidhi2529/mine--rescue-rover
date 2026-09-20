@@ -18,19 +18,6 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-import Login from './pages/Login';
-
-function ProtectedRoute({ children }) {
-  const isAuthenticated =
-    sessionStorage.getItem('understone_authenticated') === 'true' ||
-    localStorage.getItem('understone_authenticated') === 'true';
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-}
-
 export default function App() {
   return (
     <BrowserRouter>

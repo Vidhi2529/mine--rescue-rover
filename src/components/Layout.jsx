@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import mountainLogo from '../assets/mountain_logo.png';
 
 export default function Layout() {
   const location = useLocation();
@@ -66,11 +67,11 @@ export default function Layout() {
       <header className="h-14 shrink-0 bg-[#060e20] border-b border-outline-variant/30 px-4 flex items-center justify-between z-40">
         {/* Left: Active Context Breadcrumb & Sector */}
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-7 h-7 rounded bg-surface-container-high border border-outline-variant/40 flex items-center justify-center p-1 shrink-0">
+          <div className="flex items-center justify-center shrink-0 w-[100px] sm:w-[120px] md:w-[140px] max-h-12">
             <img
-              alt="Understone Logo"
-              className="w-full h-full object-contain"
-              src="https://lh3.googleusercontent.com/aida/AEtjO1XPwq0TOPvCz3--wSH2KdxwBVm0TBHzPSktGOl12gF9zuzED0oy1PTsZ03hkg-Kn3hvZ-K__mJ2SvhYeU6q_PUijEoy1u2xLbe-4yiiULbYs5qZxwKycG7f2DQ9F1wM9dwrmSuFqk0mG7kH1S0Lw7IO2rUBA93J2cKcHSCj_k6iR-IP9AEKE-ruqboSmG8NhPQo6R0ACod_FbNf4tnbxcxcLKTeb_fr1cSOxk_049lO-oUDI62PNDHOH3M"
+              alt="Understone Mountain Logo"
+              className="w-full h-auto max-h-11 object-contain"
+              src={mountainLogo || '/mountain_logo.png'}
             />
           </div>
           <div className="flex items-center gap-2.5 min-w-0 font-mono text-[12.5px] md:text-[13px]">
