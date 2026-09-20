@@ -5,6 +5,18 @@ import HazardIntel from './pages/HazardIntel';
 import EvacRefuge from './pages/EvacRefuge';
 import RoverControl from './pages/RoverControl';
 import Settings from './pages/Settings';
+import Login from './pages/Login';
+
+function ProtectedRoute({ children }) {
+  const isAuthenticated =
+    sessionStorage.getItem('understone_authenticated') === 'true' ||
+    localStorage.getItem('understone_authenticated') === 'true';
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
 
 import Login from './pages/Login';
 
@@ -38,9 +50,10 @@ export default function App() {
           <Route path="/rover-control" element={<RoverControl />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
+
 
