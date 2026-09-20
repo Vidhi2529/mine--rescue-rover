@@ -483,7 +483,7 @@ export default function IncidentBlackBox() {
                 <span>FIRMWARE DEADMAN FAIL-SAFE TRIGGERED</span>
               </div>
               <p className="text-[12px] text-rose-200 font-sans leading-snug">
-                SX1278 LoRa carrier loss exceeded 1,500ms heartbeat interval. ESP32 firmware deadman safety cut TB6612FNG H-bridge motor PWM outputs to 0%, executing immediate fail-safe chassis halt.
+                SX1278 LoRa carrier loss exceeded 1,500ms heartbeat interval. ESP32 firmware deadman safety cut CYTRON MDD20A motor PWM outputs to 0%, executing immediate fail-safe chassis halt.
               </p>
             </section>
           )}

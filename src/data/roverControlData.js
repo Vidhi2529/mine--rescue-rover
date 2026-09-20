@@ -1,10 +1,10 @@
 // Rover Manual Teleoperation & Hardware Data
 // Underground Mine Rescue Rover Teleoperation System
-// Hardware: ESP32 + TB6612FNG Dual H-Bridge + Tracked Tank Chassis + SX1278 LoRa (433MHz)
+// Hardware: ESP32 + CYTRON MDD20A Motor Driver + Tracked Tank Chassis + SX1278 LoRa (433MHz)
 
 export const initialDriveStatus = {
   driveMode: 'MANUAL',
-  motorDriver: 'TB6612FNG Dual H-Bridge',
+  motorDriver: 'CYTRON MDD20A',
   motorStatus: 'STOPPED',
   currentMovement: 'STOPPED',
   speedLevel: 'Medium', // Low | Medium | High
@@ -141,7 +141,7 @@ export const liveSensorSnapshotData = [
 export const systemHardwareModules = [
   { name: 'ESP32 Main MCU', role: 'Dual-core 240MHz System Controller', status: 'ONLINE', color: 'text-emerald-400' },
   { name: 'MPU6050 IMU', role: '6-Axis Gyro & Accelerometer (Pitch/Roll)', status: 'ONLINE', color: 'text-emerald-400' },
-  { name: 'TB6612FNG Driver', role: 'Dual H-Bridge Motor Control', status: 'ACTIVE', color: 'text-emerald-400' },
+  { name: 'CYTRON MDD20A Driver', role: 'Dual Channel Motor Control', status: 'ACTIVE', color: 'text-emerald-400' },
   { name: 'Drive Motors', role: 'Twin DC Geared Tank Tracks', status: 'READY', color: 'text-emerald-400' },
   { name: 'LoRa Transceiver', role: 'SX1278 433.0 MHz RF Link', status: 'ONLINE', color: 'text-emerald-400' },
   { name: 'Gas Sensor Array', role: 'MQ-4, MQ-7, MQ-135, MQ-136, O2', status: 'ONLINE', color: 'text-emerald-400' },

@@ -42,7 +42,7 @@ export default function Layout() {
     if (location.pathname === '/rover-control') {
       return (
         <p className="text-on-surface text-[12px] md:text-[13px] truncate leading-none">
-          TELEOPERATION ENGAGED: Manual drive active &bull; TB6612FNG armed &bull; Sonar obstacle clearance monitoring &bull; LoRa heartbeat synched.
+          TELEOPERATION ENGAGED: Manual drive active &bull; CYTRON MDD20A ARMED &bull; Sonar obstacle clearance monitoring &bull; LoRa heartbeat synched.
         </p>
       );
     }
@@ -273,17 +273,34 @@ export default function Layout() {
 
               {/* Bottom: Operator Console & Hardware Link Badge (SIH Jury Safe) */}
               <div className="p-3 border-t border-outline-variant/25 bg-[#060e20] space-y-2">
-                <div className="flex items-center gap-2.5 p-2 rounded bg-surface-container/50 border border-outline-variant/20">
-                  <div className="relative shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-mono text-[13.5px] font-bold">
-                      OP1
+                <div className="flex items-center justify-between p-2 rounded bg-surface-container/50 border border-outline-variant/20">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="relative shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-mono text-[13.5px] font-bold">
+                        OP1
+                      </div>
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-tertiary ring-1 ring-[#060e20]"></span>
                     </div>
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-tertiary ring-1 ring-[#060e20]"></span>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[13.5px] font-semibold text-on-surface leading-tight truncate">Control Desk Operator</span>
+                      <span className="font-mono text-[11.5px] text-on-surface-variant/80 tracking-wide uppercase mt-0.5 truncate">MANUAL TELEOPERATOR</span>
+                    </div>
                   </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-[13.5px] font-semibold text-on-surface leading-tight truncate">Control Desk Operator</span>
-                    <span className="font-mono text-[11.5px] text-on-surface-variant/80 tracking-wide uppercase mt-0.5 truncate">MANUAL TELEOPERATOR</span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sessionStorage.removeItem('understone_authenticated');
+                      localStorage.removeItem('understone_authenticated');
+                      sessionStorage.removeItem('understone_operator_id');
+                      localStorage.removeItem('understone_operator_id');
+                      window.location.href = '/login';
+                    }}
+                    className="p-1 rounded hover:bg-surface-container text-outline hover:text-error transition-colors shrink-0 cursor-pointer"
+                    title="Sign Out / Disconnect Terminal"
+                    aria-label="Sign Out"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">logout</span>
+                  </button>
                 </div>
                 <div className="bg-surface-container-low/90 rounded p-2.5 border border-outline-variant/25 font-mono text-[12px]">
                   <div className="flex items-center justify-between text-tertiary font-semibold">
@@ -312,7 +329,7 @@ export default function Layout() {
           <span className="text-outline-variant">|</span>
           <span>TRANSCEIVER: SX1278 LoRa (433MHz)</span>
           <span className="text-outline-variant">|</span>
-          <span>CONTROLLER: ESP32 + TB6612FNG</span>
+          <span>CONTROLLER: ESP32 + CYTRON MDD20A</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-tertiary font-semibold">

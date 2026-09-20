@@ -1,6 +1,6 @@
 // Incident Black Box Historical Event Log & Sensor Snapshots
 // Underground Mine Rescue Rover Teleoperation System
-// Hardware: ESP32 + SX1278 LoRa (433MHz) + Multi-Gas/Thermal/Sonar Sensors + TB6612FNG Motors
+// Hardware: ESP32 + SX1278 LoRa (433MHz) + Multi-Gas/Thermal/Sonar Sensors + CYTRON MDD20A Motors
 
 export const incidentSummaryStats = {
   totalEvents: {
@@ -85,7 +85,7 @@ export const incidentEvents = [
     commStatus: 'CARRIER LOST (0 pkts/s)',
     operatorResponse: 'Awaited automatic deadman stop and carrier re-lock',
     details:
-      'SX1278 packet loss exceeded the 1,500ms heartbeat limit in gallery curve. Firmware deadman safety instantly cut TB6612FNG motor PWM outputs to prevent runaway.',
+      'SX1278 packet loss exceeded the 1,500ms heartbeat limit in gallery curve. Firmware deadman safety instantly cut CYTRON MDD20A motor PWM outputs to prevent runaway.',
     action: 'Fail-Safe Stop',
     snapshot: {
       ch4: '1.15%',
@@ -169,7 +169,7 @@ export const incidentEvents = [
     category: 'OPERATOR',
     event: 'Operator stopped rover',
     source: 'Manual Teleoperation Controls',
-    module: 'TB6612FNG H-Bridge Driver',
+    module: 'CYTRON MDD20A Motor Driver',
     reading: 'PWM 0% (Halt Command)',
     severity: 'INFO',
     severityClass: 'text-sky-400 bg-sky-950/30 border-sky-600/40',

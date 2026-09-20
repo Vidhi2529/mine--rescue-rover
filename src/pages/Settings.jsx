@@ -343,7 +343,7 @@ export default function Settings() {
                 <strong className="font-mono text-rose-300 block text-[11px] uppercase">
                   IMPORTANT OPERATIONAL FAIL-SAFE:
                 </strong>
-                When LoRa connection is lost (&gt;{commTimeout}ms), the rover stops immediately. TB6612FNG motor outputs are cut at hardware level.
+                When LoRa connection is lost (&gt;{commTimeout}ms), the rover stops immediately. CYTRON MDD20A motor outputs are cut at hardware level.
               </div>
             </div>
           </section>

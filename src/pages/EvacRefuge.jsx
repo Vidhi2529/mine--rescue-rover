@@ -1,68 +1,74 @@
 import { useState } from 'react';
 import {
   evacuationOverview,
-  refugeLocations,
   tunnelPathConditions,
   suggestedOperatorPaths,
-  speakerPresets,
-  recentEvacuationLogs,
 } from '../data/evacuationData';
 
+// Underground LoRa Mesh Fixed Network Nodes (Non-GPS Reference)
+const loraNodes = [
+  {
+    id: 'node-01',
+    label: 'NODE 01',
+    role: 'SURFACE GW',
+    level: 'Surface (0.0m)',
+    cx: 194,
+    cy: 60,
+    tagX: 216,
+    tagY: 50,
+  },
+  {
+    id: 'node-02',
+    label: 'NODE 02',
+    role: 'LVL -350 RELAY',
+    level: 'Upper Haulage (-350m)',
+    cx: 380,
+    cy: 135,
+    tagX: 346,
+    tagY: 96,
+  },
+  {
+    id: 'node-03',
+    label: 'NODE 03',
+    role: 'RAMP RELAY',
+    level: 'Incline Ramp (-620m)',
+    cx: 360,
+    cy: 245,
+    tagX: 326,
+    tagY: 205,
+  },
+  {
+    id: 'node-04',
+    label: 'NODE 04',
+    role: 'LVL -850 HUB',
+    level: 'Drift C Base (-850m)',
+    cx: 330,
+    cy: 375,
+    tagX: 296,
+    tagY: 400,
+  },
+  {
+    id: 'node-05',
+    label: 'NODE 05',
+    role: 'BYPASS NODE',
+    level: 'Sector 4 East (-850m)',
+    cx: 560,
+    cy: 350,
+    tagX: 526,
+    tagY: 306,
+  },
+];
+
 export default function EvacRefuge() {
-  // Selected refuge chamber for inspector focus
+  // Selected refuge chamber for map highlighting
   const [selectedRefugeId, setSelectedRefugeId] = useState('R-01');
 
   // Selected operator path inspection
   const [selectedPathId, setSelectedPathId] = useState('path-r01');
 
-  // Selected speaker announcement preset
-  const [selectedSpeakerPreset, setSelectedSpeakerPreset] = useState('spk-2');
-  const [speakerTransmitting, setSpeakerTransmitting] = useState(false);
-  const [speakerStatusMessage, setSpeakerStatusMessage] = useState(
-    'Standby: Ready to transmit packet via LoRa 433MHz downlink.'
-  );
-
-  // Emergency stop state
-  const [emergencyStopActive, setEmergencyStopActive] = useState(false);
-
   // Operator manual tunnel marking states
   const [tunnelConditions, setTunnelConditions] = useState(tunnelPathConditions);
   const [actionNotice, setActionNotice] = useState(null);
-
-  // Handle speaker transmission
-  const handleSendSpeaker = () => {
-    const preset = speakerPresets.find((p) => p.id === selectedSpeakerPreset);
-    setSpeakerTransmitting(true);
-    setSpeakerStatusMessage('Broadcasting audio packet via SX1278 LoRa (433.0 MHz)...');
-
-    setTimeout(() => {
-      setSpeakerTransmitting(false);
-      setSpeakerStatusMessage(`Acknowledged by R-01 Speaker: "${preset?.text}"`);
-      setActionNotice({
-        type: 'success',
-        text: `LoRa Broadcast Sent: "${preset?.label}"`,
-      });
-      setTimeout(() => setActionNotice(null), 4000);
-    }, 1200);
-  };
-
-  // Toggle Emergency Stop
-  const handleToggleEmergencyStop = () => {
-    const nextState = !emergencyStopActive;
-    setEmergencyStopActive(nextState);
-    if (nextState) {
-      setActionNotice({
-        type: 'danger',
-        text: 'EMERGENCY STOP ENGAGED: Rover R-01 motor drivers halted instantly.',
-      });
-    } else {
-      setActionNotice({
-        type: 'info',
-        text: 'Emergency stop cleared. Teleoperation drive controls restored.',
-      });
-    }
-    setTimeout(() => setActionNotice(null), 4500);
-  };
 
   // Mark tunnel blocked / caution quick action
   const handleMarkTunnel = (id, newStatus, newType) => {
@@ -78,13 +84,10 @@ export default function EvacRefuge() {
     setTimeout(() => setActionNotice(null), 3500);
   };
 
-  const activeRefuge = refugeLocations.find((r) => r.id === selectedRefugeId) || refugeLocations[0];
   const activePath = suggestedOperatorPaths.find((p) => p.id === selectedPathId) || suggestedOperatorPaths[0];
 
   return (
-    <>
-      {/* 2. CENTER COLUMN: EVACUATION & REFUGE WORKSPACE */}
-      <main className="flex-1 min-w-0 bg-[#0b1326] p-3.5 flex flex-col gap-3 overflow-y-auto industrial-scrollbar">
+    <main className="flex-1 min-w-0 bg-[#0b1326] p-3.5 flex flex-col gap-3 overflow-y-auto industrial-scrollbar">
         {/* PAGE BANNER HEADER */}
         <div className="flex flex-wrap items-center justify-between border-b border-outline-variant/25 pb-3 gap-2 shrink-0">
           <div>
@@ -178,12 +181,12 @@ export default function EvacRefuge() {
                   1 Worker &bull; 1 Possible Injured
                 </span>
                 <p className="text-[11.5px] text-on-surface-variant font-sans mt-1 leading-snug">
-                  AMG8833 Thermal detects human body heat anomaly at 35.2°C (&Delta; +15.8°C over rock wall). Victim is stationary near crosscut.
+                  Telemetry confirms stationary worker located near Drift C crosscut. Victim awaits operator rescue guidance.
                 </p>
               </div>
               <div className="mt-2 pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[11px]">
-                <span className="text-outline">THERMAL:</span>
-                <span className="text-amber-300 font-bold">35.2°C (HOTSPOT)</span>
+                <span className="text-outline">VICTIM STATUS:</span>
+                <span className="text-amber-300 font-bold">STATIONARY / AWAITS RESCUE</span>
               </div>
             </div>
 
@@ -239,7 +242,7 @@ export default function EvacRefuge() {
                   {evacuationOverview.activeHazardZones.label}
                 </span>
                 <span className="font-mono text-[11px] text-outline block mt-0.5">
-                  MQ-4 &bull; AMG8833 Thermal
+                  MQ-4 &bull; Multi-Gas Surveillance
                 </span>
               </div>
               <span className={`font-mono text-[11px] px-2 py-0.5 rounded border font-semibold ${evacuationOverview.activeHazardZones.badgeColor}`}>
@@ -342,32 +345,39 @@ export default function EvacRefuge() {
           {/* Map Section Title Bar */}
           <div className="flex flex-wrap items-center justify-between border-b border-outline-variant/20 pb-2.5 gap-2">
             <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-primary text-[20px]">map</span>
-              <h2 className="font-bold text-[14px] md:text-[15px] tracking-wider uppercase text-on-surface">
-                UNDERGROUND EVACUATION SCHEMATIC &bull; SECTOR 4 CROSS-SECTION
-              </h2>
+              <span className="material-symbols-outlined text-primary text-[20px]">hub</span>
+              <div>
+                <h2 className="font-bold text-[14px] md:text-[15px] tracking-wider uppercase text-on-surface">
+                  MINE NETWORK &amp; LoRa NODE LOCATIONS &bull; SECTOR 4
+                </h2>
+                <span className="font-mono text-[11px] text-outline uppercase block mt-0.5">
+                  CONCEPTUAL UNDERGROUND MESH &bull; NON-GPS REFERENCE GRID &bull; 433 MHz MULTI-HOP
+                </span>
+              </div>
             </div>
 
-            {/* Operator Suggested Path Selector (No Auto-Route Claims) */}
-            <div className="flex items-center gap-2 font-mono text-[12px]">
-              <span className="text-outline uppercase text-[11.5px] font-medium hidden sm:inline">
-                OPERATOR SUGGESTED PATH:
-              </span>
-              <div className="flex items-center bg-[#060e20] p-0.5 rounded border border-outline-variant/40">
-                {suggestedOperatorPaths.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setSelectedPathId(p.id)}
-                    className={`px-2.5 py-1 rounded text-[11.5px] font-medium transition-all ${
-                      selectedPathId === p.id
-                        ? 'bg-primary/20 text-primary border border-primary/40 font-semibold'
-                        : 'text-outline hover:text-on-surface'
-                    }`}
-                  >
-                    {p.id === 'path-r01' ? 'Path → R-01 (110m)' : p.id === 'path-r03' ? 'Path → R-03 (240m)' : 'Shaft Egress (310m)'}
-                  </button>
-                ))}
+            {/* Toolbar Controls: Operator Path Selector */}
+            <div className="flex flex-wrap items-center gap-2.5 font-mono text-[12px]">
+              <div className="flex items-center gap-1.5">
+                <span className="text-outline uppercase text-[11px] font-medium hidden md:inline">
+                  PATH:
+                </span>
+                <div className="flex items-center bg-[#060e20] p-0.5 rounded border border-outline-variant/40">
+                  {suggestedOperatorPaths.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelectedPathId(p.id)}
+                      className={`px-2.5 py-1 rounded text-[11.5px] font-medium transition-all ${
+                        selectedPathId === p.id
+                          ? 'bg-primary/20 text-primary border border-primary/40 font-semibold'
+                          : 'text-outline hover:text-on-surface'
+                      }`}
+                    >
+                      {p.id === 'path-r01' ? 'Path → R-01 (110m)' : p.id === 'path-r03' ? 'Path → R-03 (240m)' : 'Shaft Egress (310m)'}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -435,6 +445,16 @@ export default function EvacRefuge() {
               <text x="230" y="38" fill="#38bdf8" fontFamily="JetBrains Mono, monospace" fontSize="11.5" fontWeight="bold">
                 MAIN SHAFT HOIST (SURFACE EGRESS)
               </text>
+
+              {/* Underground LoRa Mesh Network Indicator Tag */}
+              <g id="network-badge" transform="translate(860, 32)">
+                <text x="0" y="0" fill="#38bdf8" fontFamily="JetBrains Mono, monospace" fontSize="10.5" fontWeight="bold" textAnchor="end">
+                  LoRa 433 MHz UNDERGROUND MULTI-HOP
+                </text>
+                <text x="0" y="14" fill="#89929b" fontFamily="JetBrains Mono, monospace" fontSize="9" textAnchor="end">
+                  NON-GPS LOCAL REFERENCE &bull; DRIFT PROPAGATION
+                </text>
+              </g>
 
               {/* =================================================== */}
               {/* LEVEL -350m: UPPER HAULAGE & REFUGE R-01 */}
@@ -597,32 +617,6 @@ export default function EvacRefuge() {
                 </g>
 
                 {/* =================================================== */}
-                {/* CURRENT ROVER R-01 STATION (Station 14A, -850.4m) */}
-                {/* =================================================== */}
-                <g id="rover-r01" transform="translate(320, 365)">
-                  {/* Forward Sonar Cone Visualization (HC-SR04 60-degree beam) */}
-                  <polygon points="12,10 55,-8 55,28" fill="#38bdf8" fillOpacity="0.15" stroke="#38bdf8" strokeDasharray="2 2" strokeWidth="1" />
-                  
-                  {/* Blinking Radar Beacon */}
-                  <circle cx="10" cy="10" r="18" fill="none" stroke="#38bdf8" strokeWidth="1.5" opacity="0.6" className="animate-ping" />
-                  
-                  {/* Rover Chassis Body (Tank Type) */}
-                  <rect x="-4" y="0" width="28" height="20" rx="3" fill="#002c47" stroke="#38bdf8" strokeWidth="2" />
-                  
-                  {/* Track tread indicators */}
-                  <rect x="-6" y="-3" width="32" height="5" rx="1.5" fill="#1e293b" stroke="#64748b" strokeWidth="1" />
-                  <rect x="-6" y="18" width="32" height="5" rx="1.5" fill="#1e293b" stroke="#64748b" strokeWidth="1" />
-                  
-                  {/* Heading Arrow */}
-                  <polygon points="18,10 10,6 10,14" fill="#38bdf8" />
-                  
-                  {/* Rover Identifier Tag */}
-                  <rect x="-24" y="-24" width="76" height="18" rx="2" fill="#060e20" stroke="#38bdf8" strokeWidth="1.2" />
-                  <text x="-20" y="-11" fill="#38bdf8" fontFamily="JetBrains Mono, monospace" fontSize="10.5" fontWeight="bold">
-                    ROVER R-01
-                  </text>
-                </g>
-
                 {/* LOCALIZED WORKER / INJURED VICTIM MARKER */}
                 <g id="worker-victim" transform="translate(420, 365)">
                   {/* Warning Radar Ping */}
@@ -634,9 +628,174 @@ export default function EvacRefuge() {
                   {/* Tag */}
                   <rect x="-42" y="-24" width="104" height="18" rx="2" fill="#060e20" stroke="#f59e0b" strokeWidth="1.2" />
                   <text x="-38" y="-11" fill="#fde68a" fontFamily="JetBrains Mono, monospace" fontSize="9.5" fontWeight="bold">
-                    WORKER [35.2°C]
+                    WORKER [STATION 14A]
                   </text>
                 </g>
+              </g>
+
+              {/* =================================================== */}
+              {/* UNDERGROUND LoRa MESH COMMUNICATION BACKBONE (433 MHz) */}
+              {/* Multi-hop: Node 01 → Node 02 → Node 03 → Node 04 → Node 05 */}
+              {/* =================================================== */}
+              <g id="lora-mesh-backbone">
+                {/* Multi-Hop Glow Background */}
+                <path
+                  d="M 194 65 L 194 135 L 380 135 L 360 245 L 330 375 L 500 375 L 560 350"
+                  fill="none"
+                  stroke="#0284c7"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.25"
+                />
+                {/* Multi-Hop Dashed Link Line */}
+                <path
+                  d="M 194 65 L 194 135 L 380 135 L 360 245 L 330 375 L 500 375 L 560 350"
+                  fill="none"
+                  stroke="#38bdf8"
+                  strokeWidth="2"
+                  strokeDasharray="6 4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+
+                {/* Directional Hop Indicators & Labels */}
+                {/* Hop 1: Surface Headframe down Shaft to Level -350 */}
+                <g transform="translate(194, 98)">
+                  <polygon points="-3,-4 3,-4 0,3" fill="#38bdf8" />
+                  <rect x="8" y="-7" width="38" height="14" rx="2" fill="#060e20" stroke="#38bdf8" strokeWidth="0.75" />
+                  <text x="27" y="3" fill="#38bdf8" fontFamily="JetBrains Mono, monospace" fontSize="8" fontWeight="bold" textAnchor="middle">
+                    HOP 1
+                  </text>
+                </g>
+
+                {/* Hop 2: Level -350 down North Ramp to Node 03 */}
+                <g transform="translate(370, 190)">
+                  <polygon points="-2,-4 3,0 -1,4" fill="#38bdf8" transform="rotate(-65)" />
+                  <rect x="8" y="-7" width="38" height="14" rx="2" fill="#060e20" stroke="#38bdf8" strokeWidth="0.75" />
+                  <text x="27" y="3" fill="#38bdf8" fontFamily="JetBrains Mono, monospace" fontSize="8" fontWeight="bold" textAnchor="middle">
+                    HOP 2
+                  </text>
+                </g>
+
+                {/* Hop 3: Node 03 down Ramp to Node 04 */}
+                <g transform="translate(345, 310)">
+                  <polygon points="-2,-4 3,0 -1,4" fill="#38bdf8" transform="rotate(-65)" />
+                  <rect x="8" y="-7" width="38" height="14" rx="2" fill="#060e20" stroke="#38bdf8" strokeWidth="0.75" />
+                  <text x="27" y="3" fill="#38bdf8" fontFamily="JetBrains Mono, monospace" fontSize="8" fontWeight="bold" textAnchor="middle">
+                    HOP 3
+                  </text>
+                </g>
+
+                {/* Hop 4: Node 04 along Drift C to Node 05 */}
+                <g transform="translate(465, 375)">
+                  <polygon points="-4,-3 3,0 -4,3" fill="#38bdf8" />
+                  <rect x="-19" y="-19" width="38" height="14" rx="2" fill="#060e20" stroke="#38bdf8" strokeWidth="0.75" />
+                  <text x="0" y="-9" fill="#38bdf8" fontFamily="JetBrains Mono, monospace" fontSize="8" fontWeight="bold" textAnchor="middle">
+                    HOP 4
+                  </text>
+                </g>
+              </g>
+
+              {/* =================================================== */}
+              {/* FIXED LoRa NODES / BEACONS (NON-GPS REFERENCE POINTS) */}
+              {/* =================================================== */}
+              <g id="lora-fixed-nodes">
+                {loraNodes.map((node) => (
+                  <g key={node.id} id={node.id}>
+                    {/* Subtle radio signal propagation wave arcs */}
+                    <path
+                      d={`M ${node.cx - 8} ${node.cy - 17} A 10 10 0 0 1 ${node.cx + 8} ${node.cy - 17}`}
+                      fill="none"
+                      stroke="#38bdf8"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                      opacity="0.8"
+                    />
+                    <path
+                      d={`M ${node.cx - 13} ${node.cy - 20} A 16 16 0 0 1 ${node.cx + 13} ${node.cy - 20}`}
+                      fill="none"
+                      stroke="#38bdf8"
+                      strokeWidth="0.9"
+                      strokeLinecap="round"
+                      strokeDasharray="2 2"
+                      opacity="0.45"
+                    />
+
+                    {/* Vertical Antenna Mast */}
+                    <line
+                      x1={node.cx}
+                      y1={node.cy - 3}
+                      x2={node.cx}
+                      y2={node.cy - 14}
+                      stroke="#38bdf8"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    {/* Antenna Beacon Tip */}
+                    <circle cx={node.cx} cy={node.cy - 14} r="2.5" fill="#38bdf8" />
+
+                    {/* Wall/Corridor Mounting Plate Bracket */}
+                    <line
+                      x1={node.cx - 9}
+                      y1={node.cy + 9}
+                      x2={node.cx + 9}
+                      y2={node.cy + 9}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                    />
+
+                    {/* Fixed Transceiver Enclosure Box */}
+                    <rect
+                      x={node.cx - 7}
+                      y={node.cy - 3}
+                      width="14"
+                      height="12"
+                      rx="2"
+                      fill="#061e38"
+                      stroke="#38bdf8"
+                      strokeWidth="1.5"
+                    />
+                    {/* Heartbeat Status LED */}
+                    <circle cx={node.cx} cy={node.cy + 3} r="2" fill="#10b981" />
+
+                    {/* Identification Badge / Plate */}
+                    <g>
+                      <rect
+                        x={node.tagX}
+                        y={node.tagY}
+                        width="68"
+                        height="19"
+                        rx="3"
+                        fill="#060e20"
+                        stroke="#38bdf8"
+                        strokeWidth="1"
+                      />
+                      <text
+                        x={node.tagX + 34}
+                        y={node.tagY + 10}
+                        fill="#38bdf8"
+                        fontFamily="JetBrains Mono, monospace"
+                        fontSize="9.5"
+                        fontWeight="bold"
+                        textAnchor="middle"
+                      >
+                        {node.label}
+                      </text>
+                      <text
+                        x={node.tagX + 34}
+                        y={node.tagY + 17}
+                        fill="#89929b"
+                        fontFamily="JetBrains Mono, monospace"
+                        fontSize="7"
+                        fontWeight="medium"
+                        textAnchor="middle"
+                      >
+                        {node.role}
+                      </text>
+                    </g>
+                  </g>
+                ))}
               </g>
 
               {/* =================================================== */}
@@ -644,7 +803,7 @@ export default function EvacRefuge() {
               {/* =================================================== */}
               {selectedPathId === 'path-r01' && (
                 <g id="selected-path-r01">
-                  {/* Path from Rover (330, 375) -> North Ramp (380, 135) -> Refuge R-01 (680, 115) */}
+                  {/* Evacuation Path: Node 04 (330, 375) -> North Ramp (380, 135) -> Refuge R-01 (680, 115) */}
                   <path
                     d="M 330 375 L 360 245 L 380 135 L 560 135 L 610 115 L 680 115"
                     fill="none"
@@ -663,7 +822,7 @@ export default function EvacRefuge() {
 
               {selectedPathId === 'path-r03' && (
                 <g id="selected-path-r03">
-                  {/* Path from Rover (330, 375) -> North Bypass (560, 350) -> Refuge R-03 (690, 350) */}
+                  {/* Evacuation Path: Node 04 (330, 375) -> North Bypass (560, 350) -> Refuge R-03 (690, 350) */}
                   <path
                     d="M 330 375 L 500 375 L 560 350 L 690 350"
                     fill="none"
@@ -681,7 +840,7 @@ export default function EvacRefuge() {
 
               {selectedPathId === 'path-shaft' && (
                 <g id="selected-path-shaft">
-                  {/* Path from Rover (330, 375) -> Shaft base (200, 375) -> Vertical Shaft Hoist (200, 50) */}
+                  {/* Evacuation Path: Node 04 (330, 375) -> Shaft base (200, 375) -> Vertical Shaft Hoist (200, 50) */}
                   <path
                     d="M 330 375 L 200 375 L 200 50"
                     fill="none"
@@ -711,28 +870,34 @@ export default function EvacRefuge() {
               </g>
             </svg>
 
-            {/* Bottom-Left HUD: Rover Positional Telemetry */}
-            <div className="absolute bottom-3 left-3 flex flex-wrap items-center gap-2 font-mono text-[12px] pointer-events-auto">
+            {/* Bottom-Left HUD: Underground Network Architecture Status */}
+            <div className="absolute bottom-3 left-3 flex flex-wrap items-center gap-2 font-mono text-[11.5px] pointer-events-auto">
               <div className="bg-[#060e20]/90 backdrop-blur px-3 py-1.5 rounded-lg border border-outline-variant/40 flex items-center gap-2.5 shadow-lg">
-                <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
-                <span className="text-outline">STATION:</span>
-                <span className="text-on-surface font-semibold">14A</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-emerald-400 font-semibold">LoRa MESH ONLINE</span>
                 <span className="text-outline">|</span>
-                <span className="text-primary font-bold">DEPTH: -850.4m</span>
+                <span className="text-outline">TOPOLOGY:</span>
+                <span className="text-on-surface font-medium">5 FIXED NODES</span>
                 <span className="text-outline">|</span>
-                <span className="text-on-surface">PITCH -2.1°</span>
+                <span className="text-sky-300 font-medium">NON-GPS REFERENCE</span>
               </div>
             </div>
 
             {/* Bottom-Right HUD: Map Legend Overlay */}
             <div className="absolute bottom-3 right-3 bg-[#060e20]/90 backdrop-blur px-3 py-1.5 rounded-lg border border-outline-variant/40 flex flex-wrap items-center gap-3.5 font-mono text-[11.5px] shadow-lg">
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-primary"></span>
-                <span className="text-on-surface font-medium">Rover R-01</span>
+                <span className="w-2.5 h-2.5 rounded-sm border border-sky-400 bg-sky-950/80 flex items-center justify-center">
+                  <span className="w-1 h-1 rounded-full bg-sky-400"></span>
+                </span>
+                <span className="text-sky-300 font-medium">Fixed LoRa Node</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-4 h-0 border-t-2 border-dashed border-sky-400"></span>
+                <span className="text-sky-300 font-medium">Multi-Hop Link</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full border border-amber-400 bg-amber-500"></span>
-                <span className="text-amber-300 font-medium">Worker [35.2°C]</span>
+                <span className="text-amber-300 font-medium">Worker Location</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-sm border border-emerald-500 bg-emerald-950/40"></span>
@@ -798,7 +963,7 @@ export default function EvacRefuge() {
             <div className="bg-[#060e20] p-3 rounded border border-outline-variant/30 flex flex-col items-center justify-center gap-1.5">
               <span className="text-primary font-bold text-[12.5px] uppercase">1. SENSOR PAYLOAD CORRELATION</span>
               <p className="text-[11.5px] text-on-surface-variant font-sans leading-tight">
-                Gas (MQ-4, MQ-7, O2) + Smoke (MQ-2) + Temp/RH (DHT22) + Thermal (AMG8833) + Sonar (HC-SR04)
+                Gas (MQ-4, MQ-7, O2) + Smoke (MQ-2) + Temp/RH (DHT22) + Sonar (HC-SR04)
               </p>
               <span className="px-2 py-0.5 rounded bg-surface-container-high text-outline text-[11px]">
                 Continuous LoRa Uplink
@@ -908,282 +1073,6 @@ export default function EvacRefuge() {
             ))}
           </div>
         </section>
-      </main>
-
-      {/* ========================================================================= */}
-      {/* 3. RIGHT TELEMETRY & CONTROL COLUMN (Width: 360px) */}
-      {/* ========================================================================= */}
-      <aside className="w-[360px] shrink-0 bg-[#060e20] border-l border-outline-variant/30 flex flex-col h-full overflow-y-auto industrial-scrollbar z-20 select-none">
-        {/* Column Header */}
-        <div className="h-12 px-4 flex items-center justify-between border-b border-outline-variant/30 bg-[#060e20] shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[20px]">shield</span>
-            <div className="flex flex-col">
-              <h3 className="font-bold text-[14px] tracking-wider uppercase text-on-surface leading-none">
-                REFUGE &amp; CONTROL
-              </h3>
-              <span className="font-mono text-[11px] text-outline uppercase mt-0.5">
-                SUB-SURFACE HAVENS &bull; OPERATOR DISPATCH
-              </span>
-            </div>
-          </div>
-          <span className="font-mono text-[11px] text-tertiary bg-tertiary-container/20 px-2 py-0.5 rounded border border-tertiary/30 font-semibold">
-            LoRa 433
-          </span>
-        </div>
-
-        <div className="p-3.5 flex flex-col gap-4">
-          {/* ======================================================================= */}
-          {/* 3. REFUGE STATUS PANEL */}
-          {/* ======================================================================= */}
-          <section className="flex flex-col gap-2.5">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-[12px] uppercase text-outline font-semibold">
-                REFUGE CHAMBERS (SECTOR 4)
-              </span>
-              <span className="font-mono text-[11px] text-emerald-400 bg-emerald-950/30 px-1.5 py-0.5 rounded border border-emerald-600/40">
-                3 LOCATIONS
-              </span>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              {refugeLocations.map((refuge) => {
-                const isSelected = refuge.id === selectedRefugeId;
-                return (
-                  <div
-                    key={refuge.id}
-                    onClick={() => setSelectedRefugeId(refuge.id)}
-                    className={`p-3 rounded-lg border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-sky-950/40 border-primary ring-1 ring-primary/40'
-                        : 'bg-surface-container-low/90 hover:bg-surface-container/60 border-outline-variant/30'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="font-mono font-bold text-[13.5px] text-on-surface block">
-                          {refuge.name}
-                        </span>
-                        <span className="font-mono text-[11.5px] text-outline block">
-                          {refuge.level} &bull; {refuge.subGallery}
-                        </span>
-                      </div>
-                      <span
-                        className={`font-mono text-[11px] px-2 py-0.5 rounded border font-semibold ${
-                          refuge.statusType === 'available'
-                            ? 'text-emerald-400 bg-emerald-950/30 border-emerald-600/40'
-                            : 'text-amber-400 bg-amber-950/30 border-amber-600/40'
-                        }`}
-                      >
-                        {refuge.status}
-                      </span>
-                    </div>
-
-                    {/* Defendable Telemetry Attributes */}
-                    <div className="mt-2.5 grid grid-cols-2 gap-2 text-[12px] font-mono border-t border-outline-variant/20 pt-2">
-                      <div>
-                        <span className="text-outline text-[11px] block">DISTANCE</span>
-                        <span className="text-on-surface font-semibold text-[13px]">{refuge.distanceMeters} m</span>
-                      </div>
-                      <div>
-                        <span className="text-outline text-[11px] block">HAZARD NEARBY</span>
-                        <span className={refuge.hazardNearby.includes('Methane') ? 'text-amber-400 font-semibold' : 'text-emerald-400'}>
-                          {refuge.hazardNearby.includes('Methane') ? 'Methane Warning' : 'None (Safe)'}
-                        </span>
-                      </div>
-                      <div className="col-span-2">
-                        <span className="text-outline text-[11px] block">COMMUNICATION</span>
-                        <span className="text-on-surface-variant text-[11.5px]">{refuge.communication}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Selected Refuge Tactical Brief */}
-            <div className="bg-[#060e20] p-2.5 rounded border border-outline-variant/30 flex flex-col gap-1 text-[11.5px]">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-outline uppercase text-[11px] font-semibold">SELECTED DESTINATION</span>
-                <span className="font-mono text-primary font-bold">{activeRefuge.name}</span>
-              </div>
-              <p className="text-on-surface-variant font-sans leading-snug">
-                {activeRefuge.description}
-              </p>
-              <div className="flex items-center justify-between pt-1 border-t border-outline-variant/20 font-mono text-[11px]">
-                <span className="text-outline">SONAR CLEARANCE:</span>
-                <span className="text-on-surface font-medium">{activeRefuge.sonarObstacle}</span>
-              </div>
-            </div>
-          </section>
-
-          {/* ======================================================================= */}
-          {/* 7. EMERGENCY CONTROLS & DEADMAN FAIL-SAFE */}
-          {/* ======================================================================= */}
-          <section className="bg-surface-container-low/90 p-3 rounded-lg border border-outline-variant/30 flex flex-col gap-2.5">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-[12px] uppercase text-outline font-semibold">
-                EMERGENCY CONTROLS
-              </span>
-              <span className="font-mono text-[11px] text-rose-400 bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-700/40 font-semibold">
-                HARDWARE OVERRIDE
-              </span>
-            </div>
-
-            {/* Prominent Emergency STOP Button */}
-            <button
-              type="button"
-              onClick={handleToggleEmergencyStop}
-              className={`w-full py-3 px-4 rounded-lg font-mono font-bold text-[14px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg ${
-                emergencyStopActive
-                  ? 'bg-amber-600 hover:bg-amber-500 text-white animate-pulse ring-2 ring-amber-400'
-                  : 'bg-rose-600 hover:bg-rose-500 text-white ring-1 ring-rose-400/50'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[22px]">
-                {emergencyStopActive ? 'refresh' : 'emergency'}
-              </span>
-              <span>{emergencyStopActive ? 'RESUME ROVER TELEOPERATION' : 'EMERGENCY STOP ROVER'}</span>
-            </button>
-
-            {/* Compact Secondary Controls */}
-            <div className="grid grid-cols-2 gap-2 font-mono text-[11.5px]">
-              <button
-                type="button"
-                onClick={() => handleMarkTunnel('tp-3', 'BLOCKED — Obstacle detected', 'blocked')}
-                className="p-2 rounded bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40 text-on-surface flex items-center justify-center gap-1.5 transition-colors text-center"
-              >
-                <span className="material-symbols-outlined text-[16px] text-rose-400">block</span>
-                <span>MARK BLOCKED</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleMarkTunnel('tp-2', 'CAUTION — Methane warning', 'caution')}
-                className="p-2 rounded bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40 text-on-surface flex items-center justify-center gap-1.5 transition-colors text-center"
-              >
-                <span className="material-symbols-outlined text-[16px] text-amber-400">warning</span>
-                <span>MARK CAUTION</span>
-              </button>
-            </div>
-
-            {/* CRITICAL FAIL-SAFE ARMED BANNER */}
-            <div className="bg-rose-950/30 p-2.5 rounded border border-rose-500/40 flex items-start gap-2 text-[11.5px]">
-              <span className="material-symbols-outlined text-rose-400 text-[18px] shrink-0 mt-0.5">verified_user</span>
-              <div className="leading-snug">
-                <span className="font-mono font-bold text-rose-300 block text-[11px] uppercase">
-                  FAIL-SAFE ARMED &bull; DEADMAN BRAKE
-                </span>
-                <span className="text-on-surface-variant font-sans">
-                  If LoRa communication is lost (&gt;1,500ms heartbeat timeout): Rover motor drivers cut instantly.
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* ======================================================================= */}
-          {/* 6. RESCUE COMMUNICATION (SPEAKER MODULE) */}
-          {/* ======================================================================= */}
-          <section className="bg-surface-container-low/90 p-3 rounded-lg border border-outline-variant/30 flex flex-col gap-2.5">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-[12px] uppercase text-outline font-semibold">
-                ROVER SPEAKER MODULE
-              </span>
-              <span className="font-mono text-[11px] text-sky-400 bg-sky-950/30 px-1.5 py-0.5 rounded border border-sky-600/40">
-                1-WAY DOWNLINK
-              </span>
-            </div>
-
-            <p className="text-[12px] text-on-surface-variant leading-snug">
-              Transmit pre-recorded audio broadcast over SX1278 LoRa to R-01 onboard speaker:
-            </p>
-
-            {/* Preset Selector */}
-            <div className="flex flex-col gap-1.5">
-              {speakerPresets.map((preset) => (
-                <label
-                  key={preset.id}
-                  className={`p-2 rounded border cursor-pointer flex items-start gap-2 transition-colors ${
-                    selectedSpeakerPreset === preset.id
-                      ? 'bg-sky-950/40 border-primary text-on-surface'
-                      : 'bg-[#060e20] border-outline-variant/30 text-on-surface-variant hover:bg-surface-container/60'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="speaker-preset"
-                    value={preset.id}
-                    checked={selectedSpeakerPreset === preset.id}
-                    onChange={() => setSelectedSpeakerPreset(preset.id)}
-                    className="mt-1 text-primary focus:ring-0"
-                  />
-                  <div className="flex flex-col min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono text-[11px] text-primary font-bold">{preset.code}</span>
-                      <span className="font-medium text-[12px] text-on-surface truncate">{preset.label}</span>
-                    </div>
-                    <span className="text-[11.5px] italic text-on-surface-variant mt-0.5">
-                      &ldquo;{preset.text}&rdquo;
-                    </span>
-                  </div>
-                </label>
-              ))}
-            </div>
-
-            {/* Transmit Button */}
-            <button
-              type="button"
-              onClick={handleSendSpeaker}
-              disabled={speakerTransmitting}
-              className={`w-full py-2.5 px-3 rounded font-mono font-semibold text-[12.5px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
-                speakerTransmitting
-                  ? 'bg-sky-800 text-sky-200 cursor-not-allowed'
-                  : 'bg-primary/20 hover:bg-primary/30 text-primary border border-primary/50 shadow-sm'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                {speakerTransmitting ? 'sync' : 'volume_up'}
-              </span>
-              <span>{speakerTransmitting ? 'TRANSMITTING VIA LoRa...' : 'SEND VIA ROVER SPEAKER'}</span>
-            </button>
-
-            <span className="font-mono text-[11px] text-outline leading-tight">
-              {speakerStatusMessage}
-            </span>
-          </section>
-
-          {/* ======================================================================= */}
-          {/* 8. REFUGE / HAZARD EVENT LOG */}
-          {/* ======================================================================= */}
-          <section className="bg-surface-container-low/90 p-3 rounded-lg border border-outline-variant/30 flex flex-col gap-2">
-            <div className="flex items-center justify-between border-b border-outline-variant/20 pb-1.5">
-              <span className="font-mono text-[12px] uppercase text-outline font-semibold">
-                RECENT EVACUATION &bull; ACTIVITY LOG
-              </span>
-              <span className="font-mono text-[11px] text-outline">UTC TODAY</span>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              {recentEvacuationLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="bg-[#060e20] p-2 rounded border border-outline-variant/25 flex flex-col gap-1 text-[11.5px]"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-on-surface">{log.time}</span>
-                    <span className={`font-mono text-[10.5px] px-1.5 py-0.2 rounded border font-semibold ${log.badgeClass}`}>
-                      {log.severity}
-                    </span>
-                  </div>
-                  <span className="font-medium text-on-surface text-[12px]">{log.event}</span>
-                  <span className="text-on-surface-variant text-[11.5px] leading-tight font-sans">
-                    {log.detail}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-      </aside>
-    </>
+    </main>
   );
 }
