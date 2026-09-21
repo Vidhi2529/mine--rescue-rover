@@ -18,10 +18,14 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ## Local setup
 
+## Local setup
+
 1. Install dependencies with `npm install`.
-2. Create `.env.local` in the project root from `.env.example` and add your own `VITE_GEMINI_API_KEY`.
+2. Create `.env.local` in the project root if required by the current frontend configuration.
 3. Start the frontend with `npm run dev`.
 4. Start the backend in a second terminal with `cd backend` then `npm install` and `node server.js`.
 5. Open `http://localhost:5173/`.
 
-The Dashboard camera feed is bundled locally at `public/rover-cam-feed.jpg`, so it no longer depends on an external image URL. The AI Safety Agent uses the Gemini API key from `.env.local`.
+The Dashboard camera feed is bundled locally at `public/rover-cam-feed.jpg`, so it no longer depends on an external image URL.
+
+The current dashboard provides AI-based hazard analysis and safety insights for monitoring mine conditions. The Gemini-based conversational AI Safety Agent was part of an earlier prototype and has been removed from the current deployed interface.
